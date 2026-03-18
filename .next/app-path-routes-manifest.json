@@ -1,0 +1,15 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/api/auth/[...nextauth]/route": "/api/auth/[...nextauth]",
+  "/(auth)/login/page": "/login",
+  "/(dashboard)/blog/page": "/blog",
+  "/(dashboard)/blog/[id]/page": "/blog/[id]",
+  "/(dashboard)/files/page": "/files",
+  "/(dashboard)/notifications/page": "/notifications",
+  "/(dashboard)/page": "/",
+  "/(dashboard)/categories/page": "/categories",
+  "/(dashboard)/places/[id]/page": "/places/[id]",
+  "/(dashboard)/places/page": "/places",
+  "/(dashboard)/tags/page": "/tags",
+  "/(dashboard)/users/page": "/users"
+}

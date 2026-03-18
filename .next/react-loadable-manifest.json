@@ -1,0 +1,11 @@
+{
+  "app/(dashboard)/blog/[id]/page.tsx -> @/components/forms/rich-text-editor": {
+    "id": 90842,
+    "files": [
+      "static/chunks/70e0d97a.4ae3a9a94345eeca.js",
+      "static/chunks/54a60aa6.c9742631c6a8561c.js",
+      "static/chunks/677.e74981520c4c0e92.js",
+      "static/chunks/842.353b02a8379eb5d1.js"
+    ]
+  }
+}

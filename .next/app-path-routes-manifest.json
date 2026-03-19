@@ -1,15 +1,20 @@
 {
   "/_not-found/page": "/_not-found",
-  "/api/auth/[...nextauth]/route": "/api/auth/[...nextauth]",
   "/(auth)/login/page": "/login",
+  "/api/auth/[...nextauth]/route": "/api/auth/[...nextauth]",
   "/(dashboard)/blog/page": "/blog",
-  "/(dashboard)/blog/[id]/page": "/blog/[id]",
-  "/(dashboard)/files/page": "/files",
-  "/(dashboard)/notifications/page": "/notifications",
-  "/(dashboard)/page": "/",
+  "/(dashboard)/contact/page": "/contact",
   "/(dashboard)/categories/page": "/categories",
-  "/(dashboard)/places/[id]/page": "/places/[id]",
+  "/(dashboard)/contact/[id]/page": "/contact/[id]",
+  "/(dashboard)/page": "/",
+  "/(dashboard)/blog/[id]/page": "/blog/[id]",
   "/(dashboard)/places/page": "/places",
-  "/(dashboard)/tags/page": "/tags",
-  "/(dashboard)/users/page": "/users"
+  "/(dashboard)/files/page": "/files",
+  "/(dashboard)/reviews/page": "/reviews",
+  "/(dashboard)/users/[id]/page": "/users/[id]",
+  "/(dashboard)/notifications/page": "/notifications",
+  "/(dashboard)/places/[id]/page": "/places/[id]",
+  "/(dashboard)/settings/page": "/settings",
+  "/(dashboard)/users/page": "/users",
+  "/(dashboard)/tags/page": "/tags"
 }

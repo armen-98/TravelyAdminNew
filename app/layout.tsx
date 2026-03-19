@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Travely Admin",
-  description: "Travely Admin Dashboard",
+  description: "Admin Dashboard",
 };
 
 export default function RootLayout({

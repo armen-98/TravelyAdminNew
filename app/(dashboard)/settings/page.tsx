@@ -1,36 +1,54 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import type { User } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Settings, Lock, User as UserIcon, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { Settings, Lock, Loader2, Trash2 } from "lucide-react";
 
 // ── Schemas ───────────────────────────────────────────────────────────────────
 
 const profileSchema = z.object({
   fullName: z.string().min(1, "Name is required"),
   phone: z.string().optional(),
-  website: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  website: z.union([
+    z.literal(""),
+    z.string().url("Must be a valid URL"),
+  ]),
   description: z.string().optional(),
 });
 
 const passwordSchema = z
   .object({
-    oldPassword: z.string().min(1, "Current password is required"),
+    currentPassword: z.string().min(1, "Current password is required"),
     newPassword: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string().min(1, "Please confirm your password"),
   })
@@ -45,8 +63,12 @@ type PasswordForm = z.infer<typeof passwordSchema>;
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
-  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [profileSaving, setProfileSaving] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarRemoving, setAvatarRemoving] = useState(false);
+  const [removePhotoOpen, setRemovePhotoOpen] = useState(false);
 
   // Fetch current user
   const { data: me, isLoading } = useQuery({
@@ -81,12 +103,58 @@ export default function SettingsPage() {
   const onSaveProfile = async (values: ProfileForm) => {
     setProfileSaving(true);
     try {
-      await api.post("/users/profile", values);
+      const payload = {
+        fullName: values.fullName,
+        description: values.description ?? "",
+        phone: values.phone ?? "",
+        website: values.website?.trim() ?? "",
+      };
+      await api.post("/users/profile", payload);
+      await queryClient.invalidateQueries({ queryKey: ["me"] });
       toast.success("Profile updated successfully");
-    } catch {
-      toast.error("Failed to update profile");
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string | string[] } } };
+      const msg = err?.response?.data?.message;
+      const text = Array.isArray(msg) ? msg.join(", ") : msg;
+      toast.error(text || "Failed to update profile");
     } finally {
       setProfileSaving(false);
+    }
+  };
+
+  const onAvatarSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setAvatarUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+      await api.post("/users/profile-image", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      await queryClient.invalidateQueries({ queryKey: ["me"] });
+      toast.success("Profile photo updated");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      toast.error(e?.response?.data?.message ?? "Failed to upload photo");
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
+  const removeProfilePhoto = async () => {
+    setAvatarRemoving(true);
+    try {
+      await api.delete("/users/profile-image");
+      await queryClient.invalidateQueries({ queryKey: ["me"] });
+      toast.success("Profile photo removed");
+      setRemovePhotoOpen(false);
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      toast.error(e?.response?.data?.message ?? "Failed to remove photo");
+    } finally {
+      setAvatarRemoving(false);
     }
   };
 
@@ -102,8 +170,8 @@ export default function SettingsPage() {
 
   const changePassword = useMutation({
     mutationFn: async (values: PasswordForm) => {
-      await api.post("/users/change-password", {
-        oldPassword: values.oldPassword,
+      await api.post("/users/change-password-secure", {
+        currentPassword: values.currentPassword,
         newPassword: values.newPassword,
       });
     },
@@ -136,42 +204,83 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 max-w-2xl">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-slate-100">
-          <Settings className="h-5 w-5 text-slate-600" />
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="p-2 rounded-lg bg-slate-100 shrink-0">
+            <Settings className="h-5 w-5 text-slate-600" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">Settings</h1>
+            <p className="text-muted-foreground text-sm">
+              Edit your profile, photo, and password
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold">Settings</h1>
-          <p className="text-muted-foreground text-sm">
-            Manage your account information
-          </p>
-        </div>
+        <Button variant="outline" asChild className="shrink-0">
+          <Link href="/profile">Cancel</Link>
+        </Button>
       </div>
 
       {/* Profile card */}
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-3">
-            <UserIcon className="h-4 w-4 text-muted-foreground" />
-            <CardTitle className="text-base">Profile Information</CardTitle>
-          </div>
-          <CardDescription>Update your name, contact, and bio</CardDescription>
+          <CardTitle className="text-base">Profile</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Avatar row */}
-          <div className="flex items-center gap-4 mb-6">
-            <Avatar className="h-16 w-16">
+          {/* Photo */}
+          <div className="flex flex-wrap items-center gap-4 mb-6">
+            <Avatar className="h-14 w-14">
               <AvatarImage src={me?.profileImage?.url} />
-              <AvatarFallback className="bg-blue-600 text-white text-xl font-bold">
+              <AvatarFallback className="bg-blue-600 text-white text-lg font-bold">
                 {initials ?? "A"}
               </AvatarFallback>
             </Avatar>
-            <div>
-              <p className="font-semibold">{me?.fullName}</p>
-              <p className="text-sm text-muted-foreground">{me?.email}</p>
-              <p className="text-xs text-blue-600 capitalize mt-0.5">
-                {(me as any)?.role?.name ?? session?.user?.role}
-              </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp,image/avif"
+                className="hidden"
+                onChange={onAvatarSelected}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={avatarUploading || avatarRemoving}
+                onClick={() => avatarInputRef.current?.click()}
+              >
+                {avatarUploading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Uploading…
+                  </>
+                ) : (
+                  "Change photo"
+                )}
+              </Button>
+              {me?.profileImage?.url ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="text-destructive hover:text-destructive"
+                  disabled={avatarUploading || avatarRemoving}
+                  onClick={() => setRemovePhotoOpen(true)}
+                >
+                  {avatarRemoving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Removing…
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Remove photo
+                    </>
+                  )}
+                </Button>
+              ) : null}
             </div>
           </div>
 
@@ -251,16 +360,16 @@ export default function SettingsPage() {
             className="space-y-4"
           >
             <div className="space-y-2">
-              <Label htmlFor="oldPassword">Current Password</Label>
+              <Label htmlFor="currentPassword">Current Password</Label>
               <Input
-                id="oldPassword"
+                id="currentPassword"
                 type="password"
-                {...regPassword("oldPassword")}
+                {...regPassword("currentPassword")}
                 autoComplete="current-password"
               />
-              {passwordErrors.oldPassword && (
+              {passwordErrors.currentPassword && (
                 <p className="text-red-500 text-xs">
-                  {passwordErrors.oldPassword.message}
+                  {passwordErrors.currentPassword.message}
                 </p>
               )}
             </div>
@@ -311,6 +420,37 @@ export default function SettingsPage() {
           </form>
         </CardContent>
       </Card>
+
+      <AlertDialog open={removePhotoOpen} onOpenChange={setRemovePhotoOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove profile photo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your profile picture will be removed and your initials will be
+              shown instead. This cannot be undone, but you can upload a new
+              photo anytime.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={avatarRemoving}>Cancel</AlertDialogCancel>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={avatarRemoving}
+              onClick={() => void removeProfilePhoto()}
+            >
+              {avatarRemoving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Removing…
+                </>
+              ) : (
+                "Remove"
+              )}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

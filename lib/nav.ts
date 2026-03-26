@@ -9,6 +9,8 @@ import {
   FolderOpen,
   MessageSquare,
   Mail,
+  UserCircle,
+  Settings,
 } from "lucide-react";
 
 export type NavItem = {
@@ -78,5 +80,17 @@ export const navItems: NavItem[] = [
     href: "/files",
     icon: FileImage,
     roles: ["super-admin", "admin"],
+  },
+  {
+    title: "Profile",
+    href: "/profile",
+    icon: UserCircle,
+    roles: ["super-admin", "admin", "moderator"],
+  },
+  {
+    title: "Settings",
+    href: "/settings",
+    icon: Settings,
+    roles: ["super-admin", "admin", "moderator"],
   },
 ];

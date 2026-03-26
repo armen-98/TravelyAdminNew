@@ -5,9 +5,21 @@ import { Providers } from "@/lib/providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
+  "http://localhost:3000";
+
 export const metadata: Metadata = {
-  title: "Travely Admin",
-  description: "Admin Dashboard",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Admin",
+    template: "Admin | %s",
+  },
+  description: "Admin dashboard for Travely",
+  icons: {
+    icon: [{ url: "/Travely.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/Travely.svg" }],
+  }
 };
 
 export default function RootLayout({

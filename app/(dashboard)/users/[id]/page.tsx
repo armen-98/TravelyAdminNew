@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
 import api from "@/lib/api";
 import type { User, Place, PlaceReview, PaginatedResponse } from "@/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,6 +14,23 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   ArrowLeft,
   UserCheck,
@@ -24,9 +43,12 @@ import {
   Globe,
   Calendar,
   MessageSquare,
+  ShieldCheck,
 } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { formatDate, getRoleBadgeVariant } from "@/lib/utils";
 import { toast } from "sonner";
+import { canManageUsers } from "@/lib/permissions";
+import { useAssignUserRole } from "@/hooks/use-users";
 
 function initials(name?: string) {
   return (name ?? "?")
@@ -41,6 +63,11 @@ export default function UserDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { data: session } = useSession();
+  const sessionRole = session?.user?.role;
+  const assignRole = useAssignUserRole();
+  const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
+  const [pendingRole, setPendingRole] = useState<string | null>(null);
 
   // ── User ──────────────────────────────────────────────────────────────────
   const { data: user, isLoading } = useQuery({
@@ -52,7 +79,7 @@ export default function UserDetailPage() {
   });
 
   // ── User's places ─────────────────────────────────────────────────────────
-  const { data: placesData } = useQuery({
+  const { data: placesData, isLoading: placesLoading } = useQuery({
     queryKey: ["places", { userId: id }],
     queryFn: async () => {
       const { data } = await api.get<PaginatedResponse<Place>>("/admin/places", {
@@ -64,7 +91,7 @@ export default function UserDetailPage() {
   });
 
   // ── User's reviews ────────────────────────────────────────────────────────
-  const { data: reviewsData } = useQuery({
+  const { data: reviewsData, isLoading: reviewsLoading } = useQuery({
     queryKey: ["reviews", { userId: id }],
     queryFn: async () => {
       const { data } = await api.get<PaginatedResponse<PlaceReview>>(
@@ -124,13 +151,6 @@ export default function UserDetailPage() {
   }
 
   const role = user.role?.name ?? "user";
-  const roleVariants: Record<string, "default" | "destructive" | "secondary" | "outline"> = {
-    "super-admin": "destructive",
-    admin: "default",
-    moderator: "secondary",
-    business: "outline",
-    user: "outline",
-  };
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -140,26 +160,58 @@ export default function UserDetailPage() {
           <ArrowLeft className="h-4 w-4" />
           Back to Users
         </Button>
-        {user.isActive ? (
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => deactivate.mutate()}
-            disabled={deactivate.isPending}
-          >
-            <UserX className="mr-2 h-4 w-4" />
-            Deactivate
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            className="bg-green-600 hover:bg-green-700"
-            onClick={() => activate.mutate()}
-            disabled={activate.isPending}
-          >
-            <UserCheck className="mr-2 h-4 w-4" />
-            Activate
-          </Button>
+        {canManageUsers(sessionRole) && (
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Assign Role */}
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+              <Select
+                value={user.role?.name ?? "user"}
+                onValueChange={(roleName) => {
+                  if (roleName === "super-admin" || roleName === "admin") {
+                    setPendingRole(roleName);
+                  } else {
+                    assignRole.mutate({ id: Number(id), roleName });
+                  }
+                }}
+                disabled={assignRole.isPending}
+              >
+                <SelectTrigger className="h-8 w-36 text-sm">
+                  <SelectValue placeholder="Assign role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">User</SelectItem>
+                  <SelectItem value="business">Business</SelectItem>
+                  <SelectItem value="moderator">Moderator</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="super-admin">Super Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Activate / Deactivate */}
+            {user.isActive ? (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setShowDeactivateConfirm(true)}
+                disabled={deactivate.isPending}
+              >
+                <UserX className="mr-2 h-4 w-4" />
+                Deactivate
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                className="bg-green-600 hover:bg-green-700"
+                onClick={() => activate.mutate()}
+                disabled={activate.isPending}
+              >
+                <UserCheck className="mr-2 h-4 w-4" />
+                Activate
+              </Button>
+            )}
+          </div>
         )}
       </div>
 
@@ -176,7 +228,7 @@ export default function UserDetailPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-2xl font-bold">{user.fullName}</h1>
-                <Badge variant={roleVariants[role] ?? "outline"} className="capitalize">
+                <Badge variant={getRoleBadgeVariant(role)} className="capitalize">
                   {role}
                 </Badge>
                 <Badge variant={user.isActive ? "success" : "destructive"}>
@@ -255,7 +307,13 @@ export default function UserDetailPage() {
 
         {/* ── Places tab ── */}
         <TabsContent value="places" className="mt-4">
-          {places.length === 0 ? (
+          {placesLoading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-20 rounded-lg" />
+              ))}
+            </div>
+          ) : places.length === 0 ? (
             <Card>
               <CardContent className="py-10 text-center text-muted-foreground">
                 No places submitted yet.
@@ -312,7 +370,13 @@ export default function UserDetailPage() {
 
         {/* ── Reviews tab ── */}
         <TabsContent value="reviews" className="mt-4">
-          {reviews.length === 0 ? (
+          {reviewsLoading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-20 rounded-lg" />
+              ))}
+            </div>
+          ) : reviews.length === 0 ? (
             <Card>
               <CardContent className="py-10 text-center text-muted-foreground">
                 No reviews written yet.
@@ -364,6 +428,67 @@ export default function UserDetailPage() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Role Escalation Confirmation */}
+      <AlertDialog
+        open={!!pendingRole}
+        onOpenChange={(open) => {
+          if (!open) setPendingRole(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Assign Privileged Role</AlertDialogTitle>
+            <AlertDialogDescription>
+              You are about to assign{" "}
+              <strong className="capitalize">{pendingRole}</strong> to{" "}
+              <strong>{user?.fullName}</strong>. This grants elevated access to
+              the admin panel. Are you sure?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingRole)
+                  assignRole.mutate({ id: Number(id), roleName: pendingRole });
+                setPendingRole(null);
+              }}
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Deactivate Confirmation */}
+      <AlertDialog
+        open={showDeactivateConfirm}
+        onOpenChange={setShowDeactivateConfirm}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deactivate User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to deactivate{" "}
+              <strong>{user.fullName}</strong>? They will lose access to their
+              account immediately.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => {
+                deactivate.mutate();
+                setShowDeactivateConfirm(false);
+              }}
+            >
+              Deactivate
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

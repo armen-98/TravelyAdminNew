@@ -44,11 +44,27 @@ export function useCreateBlog() {
   });
 }
 
+export type AdminBlogPatchInput = {
+  id: number;
+  title?: string;
+  description?: string;
+  categoryId?: number;
+  isActive?: boolean;
+  image?: string;
+};
+
 export function useUpdateBlog() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...payload }: Partial<Blog> & { id: number }) => {
-      const { data } = await api.patch(`/admin/blogs/${id}`, payload);
+    mutationFn: async ({ id, ...rest }: AdminBlogPatchInput) => {
+      const body: Record<string, string | number | boolean> = {};
+      if (rest.title !== undefined) body.title = rest.title;
+      if (rest.description !== undefined) body.description = rest.description;
+      if (rest.categoryId !== undefined) body.categoryId = rest.categoryId;
+      if (rest.isActive !== undefined) body.isActive = rest.isActive;
+      if (rest.image !== undefined && rest.image !== null)
+        body.image = rest.image;
+      const { data } = await api.patch(`/admin/blogs/${id}`, body);
       return data;
     },
     onSuccess: () => {

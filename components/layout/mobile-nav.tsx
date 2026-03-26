@@ -3,37 +3,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import {
-  LayoutDashboard,
-  Users,
-  MapPin,
-  Tag,
-  Bell,
-  FileImage,
-  BookOpen,
-  FolderOpen,
-  MapPinned,
-  Menu,
-  X,
-} from "lucide-react";
+import { MapPinned, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-
-const navItems = [
-  { title: "Dashboard", href: "/", icon: LayoutDashboard },
-  { title: "Users", href: "/users", icon: Users },
-  { title: "Places", href: "/places", icon: MapPin },
-  { title: "Categories", href: "/categories", icon: FolderOpen },
-  { title: "Blog", href: "/blog", icon: BookOpen },
-  { title: "Tags", href: "/tags", icon: Tag },
-  { title: "Notifications", href: "/notifications", icon: Bell },
-  { title: "Files", href: "/files", icon: FileImage },
-];
+import { useSession } from "next-auth/react";
+import { navItems } from "@/lib/nav";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const role = session?.user?.role ?? "";
+  const visibleItems = navItems.filter((item) => item.roles.includes(role));
 
   return (
     <>
@@ -59,7 +41,7 @@ export function MobileNav() {
             </SheetTitle>
           </SheetHeader>
           <nav className="space-y-1 px-2 py-4">
-            {navItems.map((item) => {
+            {visibleItems.map((item) => {
               const isActive =
                 item.href === "/"
                   ? pathname === "/"

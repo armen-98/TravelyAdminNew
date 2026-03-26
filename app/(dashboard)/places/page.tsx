@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { DataTable, Column } from "@/components/tables/data-table";
 import {
   usePlaces,
@@ -29,6 +30,16 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
@@ -40,15 +51,41 @@ import {
   MapPin,
   Star,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { formatDate } from "@/lib/utils";
+import { canDelete } from "@/lib/permissions";
+
+type VerifiedFilter = "all" | "pending" | "approved" | "rejected";
+
+function verificationFilterParam(
+  filter: VerifiedFilter,
+): "pending" | "approved" | "rejected" | undefined {
+  if (filter === "all") return undefined;
+  return filter;
+}
 
 export default function PlacesPage() {
   const router = useRouter();
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<VerifiedFilter>("all");
   const [rejectTarget, setRejectTarget] = useState<Place | null>(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<Place | null>(null);
+  const { data: session } = useSession();
+  const sessionRole = session?.user?.role;
 
-  const { data, isLoading } = usePlaces({ page });
+  const { data, isLoading } = usePlaces({
+    page,
+    search: search || undefined,
+    verificationFilter: verificationFilterParam(statusFilter),
+  });
   const approve = useApprovePlace();
   const reject = useRejectPlace();
   const deletePlace = useDeletePlace();
@@ -60,7 +97,7 @@ export default function PlacesPage() {
     setRejectReason("");
   };
 
-  const columns: Column<Place>[] = [
+  const columns: Column<Place>[] = useMemo(() => [
     {
       key: "name",
       header: "Place",
@@ -180,19 +217,24 @@ export default function PlacesPage() {
                 </DropdownMenuItem>
               </>
             )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-red-600 focus:text-red-600"
-              onClick={() => deletePlace.mutate(place.id)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
+            {canDelete(sessionRole) && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-red-600 focus:text-red-600"
+                  onClick={() => setDeleteTarget(place)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       ),
     },
-  ];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ], [sessionRole, router, approve, reject]);
 
   return (
     <div className="space-y-6">
@@ -215,6 +257,23 @@ export default function PlacesPage() {
         isLoading={isLoading}
         searchKey="name"
         searchPlaceholder="Search places..."
+        onSearch={(val) => { setSearch(val); setPage(1); }}
+        filters={
+          <Select
+            value={statusFilter}
+            onValueChange={(v) => { setStatusFilter(v as VerifiedFilter); setPage(1); }}
+          >
+            <SelectTrigger className="h-9 w-36 text-sm">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+            </SelectContent>
+          </Select>
+        }
         page={page}
         totalPages={data?.totalPages}
         onPageChange={setPage}
@@ -254,6 +313,34 @@ export default function PlacesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={() => setDeleteTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Place</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to permanently delete &quot;{deleteTarget?.name}&quot;?
+              This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => {
+                if (deleteTarget) deletePlace.mutate(deleteTarget.id);
+                setDeleteTarget(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

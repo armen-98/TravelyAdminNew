@@ -10,6 +10,7 @@ interface ReviewsParams {
   limit?: number;
   search?: string;
   placeId?: number;
+  reviewStatus?: "pending" | "approved" | "rejected";
 }
 
 export function useReviews(params: ReviewsParams = {}) {

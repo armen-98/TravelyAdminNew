@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import { canAccessPath } from "@/lib/permissions";
 
 export default auth((req) => {
   const { nextUrl } = req;
@@ -12,6 +13,13 @@ export default auth((req) => {
 
   if (isLoggedIn && isLoginPage) {
     return NextResponse.redirect(new URL("/", req.url));
+  }
+
+  if (isLoggedIn) {
+    const role = (req.auth as { user?: { role?: string } })?.user?.role;
+    if (!canAccessPath(role, nextUrl.pathname)) {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
   }
 
   return NextResponse.next();

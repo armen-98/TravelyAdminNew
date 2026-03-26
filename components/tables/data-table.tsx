@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -26,6 +26,10 @@ interface DataTableProps<T = any> {
   data: T[];
   searchKey?: string;
   searchPlaceholder?: string;
+  /** When provided, the search input debounces and calls this instead of filtering locally */
+  onSearch?: (value: string) => void;
+  /** Extra filter controls rendered next to the search input */
+  filters?: React.ReactNode;
   isLoading?: boolean;
   page?: number;
   totalPages?: number;
@@ -40,6 +44,8 @@ export function DataTable<T = any>({
   data,
   searchKey,
   searchPlaceholder = "Search...",
+  onSearch,
+  filters,
   isLoading,
   page = 1,
   totalPages = 1,
@@ -49,30 +55,41 @@ export function DataTable<T = any>({
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
 
+  // Debounce server-side search (300 ms)
+  useEffect(() => {
+    if (!onSearch) return;
+    const timer = setTimeout(() => onSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search, onSearch]);
+
   const filtered = useMemo(() => {
-    if (!searchKey || !search) return data;
+    // When onSearch is provided, filtering is handled server-side
+    if (onSearch || !searchKey || !search) return data;
     return data.filter((row) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const value = (row as any)[searchKey];
       return String(value ?? "").toLowerCase().includes(search.toLowerCase());
     });
-  }, [data, search, searchKey]);
+  }, [data, search, searchKey, onSearch]);
 
   return (
     <div className="space-y-4">
       {/* Toolbar */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        {searchKey && (
-          <div className="relative max-w-sm flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={searchPlaceholder}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-        )}
+        <div className="flex items-center gap-2 flex-1 flex-wrap">
+          {searchKey && (
+            <div className="relative max-w-sm flex-1 min-w-[180px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={searchPlaceholder}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          )}
+          {filters && <div className="flex items-center gap-2">{filters}</div>}
+        </div>
         {toolbar && <div className="flex items-center gap-2">{toolbar}</div>}
       </div>
 
@@ -100,7 +117,8 @@ export function DataTable<T = any>({
             ) : filtered.length ? (
               filtered.map((row, i) => (
                 <TableRow
-                  key={i}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  key={(row as any).id ?? i}
                   className={onRowClick ? "cursor-pointer" : undefined}
                   onClick={() => onRowClick?.(row)}
                 >

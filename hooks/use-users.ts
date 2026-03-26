@@ -63,3 +63,18 @@ export function useDeactivateUser() {
     onError: () => toast.error("Failed to deactivate user"),
   });
 }
+
+export function useAssignUserRole() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, roleName }: { id: number; roleName: string }) => {
+      const { data } = await api.patch(`/admin/users/${id}/role`, { roleName });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      toast.success("User role updated successfully");
+    },
+    onError: () => toast.error("Failed to update user role"),
+  });
+}

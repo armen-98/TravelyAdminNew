@@ -58,8 +58,8 @@ export default function LoginPage() {
 
     // ── Step 2: Role gate ─────────────────────────────────────────────────────
     const role = apiData.user?.role?.name ?? "user";
-    if (!["admin", "super-admin"].includes(role)) {
-      const message = "Access denied. Admin privileges required.";
+    if (!["admin", "super-admin", "moderator"].includes(role)) {
+      const message = "Access denied. Admin or Moderator privileges required.";
       setApiError(message);
       toast.error(message);
       setIsLoading(false);
@@ -117,11 +117,12 @@ export default function LoginPage() {
 
             {/* Email */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">
+              <label htmlFor="email" className="text-sm font-medium text-slate-300">
                 Email Address
               </label>
               <input
                 {...register("email")}
+                id="email"
                 type="email"
                 placeholder="admin@travely.com"
                 autoComplete="email"
@@ -134,12 +135,13 @@ export default function LoginPage() {
 
             {/* Password */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">
+              <label htmlFor="password" className="text-sm font-medium text-slate-300">
                 Password
               </label>
               <div className="relative">
                 <input
                   {...register("password")}
+                  id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   autoComplete="current-password"
@@ -147,6 +149,7 @@ export default function LoginPage() {
                 />
                 <button
                   type="button"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
                 >
@@ -180,7 +183,7 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-slate-500 text-xs mt-6">
-            Admin and Super Admin access only
+            Super Admin, Admin, and Moderator access only
           </p>
         </div>
       </div>

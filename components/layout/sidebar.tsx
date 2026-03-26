@@ -2,82 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Users,
-  MapPin,
-  Tag,
-  Bell,
-  FileImage,
-  BookOpen,
-  FolderOpen,
-  MapPinned,
-  ChevronLeft,
-  ChevronRight,
-  MessageSquare,
-  Mail,
-} from "lucide-react";
+import { MapPinned, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
-const navItems = [
-  {
-    title: "Dashboard",
-    href: "/",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Users",
-    href: "/users",
-    icon: Users,
-  },
-  {
-    title: "Places",
-    href: "/places",
-    icon: MapPin,
-  },
-  {
-    title: "Reviews",
-    href: "/reviews",
-    icon: MessageSquare,
-  },
-  {
-    title: "Contact Us",
-    href: "/contact",
-    icon: Mail,
-  },
-  {
-    title: "Categories",
-    href: "/categories",
-    icon: FolderOpen,
-  },
-  {
-    title: "Blog",
-    href: "/blog",
-    icon: BookOpen,
-  },
-  {
-    title: "Tags",
-    href: "/tags",
-    icon: Tag,
-  },
-  {
-    title: "Notifications",
-    href: "/notifications",
-    icon: Bell,
-  },
-  {
-    title: "Files",
-    href: "/files",
-    icon: FileImage,
-  }
-];
+import { useSession } from "next-auth/react";
+import { navItems } from "@/lib/nav";
 
 export function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const { data: session } = useSession();
+  const role = session?.user?.role ?? "";
+  const visibleItems = navItems.filter((item) => item.roles.includes(role));
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -102,7 +40,7 @@ export function Sidebar() {
         {/* Nav */}
         <ScrollArea className="flex-1 py-4">
           <nav className="space-y-1 px-2">
-            {navItems.map((item) => {
+            {visibleItems.map((item) => {
               const isActive =
                 item.href === "/"
                   ? pathname === "/"
@@ -147,6 +85,7 @@ export function Sidebar() {
         {/* Collapse button */}
         <button
           onClick={() => setCollapsed(!collapsed)}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           className="absolute -right-3 top-20 flex items-center justify-center w-6 h-6 rounded-full bg-background border border-border text-muted-foreground hover:text-foreground transition-colors shadow-sm"
         >
           {collapsed ? (

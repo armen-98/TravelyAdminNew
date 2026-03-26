@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { DataTable, Column } from "@/components/tables/data-table";
 import { useBlogs, useDeleteBlog, useUpdateBlog } from "@/hooks/use-blog";
 import type { Blog } from "@/types";
@@ -34,12 +35,16 @@ import {
   XCircle,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { canEditBlogs, canDelete } from "@/lib/permissions";
 
 export default function BlogPage() {
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<Blog | null>(null);
+  const { data: session } = useSession();
+  const sessionRole = session?.user?.role;
 
-  const { data, isLoading } = useBlogs({ page });
+  const { data, isLoading } = useBlogs({ page, search: search || undefined });
   const deleteBlog = useDeleteBlog();
   const updateBlog = useUpdateBlog();
 
@@ -49,15 +54,30 @@ export default function BlogPage() {
   const handleReject = (blog: Blog) =>
     updateBlog.mutate({ id: blog.id, isActive: false });
 
-  const columns: Column<Blog>[] = [
+  const columns: Column<Blog>[] = useMemo(() => [
     {
       key: "title",
       header: "Title",
       cell: (blog) => (
         <div>
-          <p className="font-medium text-sm">{blog.title}</p>
-          <p className="text-xs text-muted-foreground">
-            by {blog.user?.fullName ?? "Unknown"}
+          <Link
+            href={`/blog/${blog.id}`}
+            className="font-medium text-sm text-blue-600 hover:underline"
+          >
+            {blog.title}
+          </Link>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            by{" "}
+            {blog.user?.id != null ? (
+              <Link
+                href={`/users/${blog.user.id}`}
+                className="text-blue-600 hover:underline"
+              >
+                {blog.user.fullName ?? "Unknown"}
+              </Link>
+            ) : (
+              (blog.user?.fullName ?? "Unknown")
+            )}
           </p>
         </div>
       ),
@@ -107,45 +127,56 @@ export default function BlogPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link href={`/blog/${blog.id}`}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            {!blog.isActive ? (
-              <DropdownMenuItem
-                className="text-green-600 focus:text-green-600"
-                onClick={() => handleApprove(blog)}
-                disabled={updateBlog.isPending}
-              >
-                <CheckCircle className="mr-2 h-4 w-4" />
-                Publish
-              </DropdownMenuItem>
-            ) : (
-              <DropdownMenuItem
-                className="text-orange-600 focus:text-orange-600"
-                onClick={() => handleReject(blog)}
-                disabled={updateBlog.isPending}
-              >
-                <XCircle className="mr-2 h-4 w-4" />
-                Unpublish
+            {canEditBlogs(sessionRole) && (
+              <DropdownMenuItem asChild>
+                <Link href={`/blog/${blog.id}`}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit
+                </Link>
               </DropdownMenuItem>
             )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-red-600 focus:text-red-600"
-              onClick={() => setDeleteTarget(blog)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
+            {canEditBlogs(sessionRole) && (
+              <>
+                <DropdownMenuSeparator />
+                {!blog.isActive ? (
+                  <DropdownMenuItem
+                    className="text-green-600 focus:text-green-600"
+                    onClick={() => handleApprove(blog)}
+                    disabled={updateBlog.isPending}
+                  >
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Publish
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem
+                    className="text-orange-600 focus:text-orange-600"
+                    onClick={() => handleReject(blog)}
+                    disabled={updateBlog.isPending}
+                  >
+                    <XCircle className="mr-2 h-4 w-4" />
+                    Unpublish
+                  </DropdownMenuItem>
+                )}
+              </>
+            )}
+            {canDelete(sessionRole) && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-red-600 focus:text-red-600"
+                  onClick={() => setDeleteTarget(blog)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       ),
     },
-  ];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ], [sessionRole, updateBlog.isPending]);
 
   return (
     <div className="space-y-6">
@@ -162,12 +193,14 @@ export default function BlogPage() {
             </p>
           </div>
         </div>
-        <Button asChild>
-          <Link href="/blog/new">
-            <Plus className="mr-2 h-4 w-4" />
-            New Post
-          </Link>
-        </Button>
+        {canEditBlogs(sessionRole) && (
+          <Button asChild>
+            <Link href="/blog/new">
+              <Plus className="mr-2 h-4 w-4" />
+              New Post
+            </Link>
+          </Button>
+        )}
       </div>
 
       <DataTable
@@ -176,6 +209,7 @@ export default function BlogPage() {
         isLoading={isLoading}
         searchKey="title"
         searchPlaceholder="Search blog posts..."
+        onSearch={(val) => { setSearch(val); setPage(1); }}
         page={page}
         totalPages={data?.totalPages}
         onPageChange={setPage}
@@ -183,7 +217,9 @@ export default function BlogPage() {
 
       <AlertDialog
         open={!!deleteTarget}
-        onOpenChange={() => setDeleteTarget(null)}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>

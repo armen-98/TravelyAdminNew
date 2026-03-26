@@ -1,8 +1,11 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { Bell, LogOut, User, Settings, Menu } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Bell, LogOut, User as UserIcon, Settings } from "lucide-react";
 import Link from "next/link";
+import api from "@/lib/api";
+import type { User as MeUser } from "@/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -18,9 +21,18 @@ import { MobileNav } from "./mobile-nav";
 export function Header() {
   const { data: session } = useSession();
 
-  const initials = session?.user?.name
-    ?.split(" ")
-    .map((n) => n[0])
+  const { data: me } = useQuery({
+    queryKey: ["me"],
+    queryFn: async () => {
+      const { data } = await api.get<{ data: MeUser }>("/users/me");
+      return data.data ?? data;
+    },
+  });
+
+  const displayName = me?.fullName ?? session?.user?.name;
+  const initials = displayName
+    ?.split(/\s+/)
+    .map((n: string) => n[0])
     .join("")
     .toUpperCase()
     .slice(0, 2);
@@ -31,21 +43,33 @@ export function Header() {
         <MobileNav />
       </div>
 
-      <div className="flex items-center gap-2">
-        {/* Notifications bell */}
-        <Button variant="ghost" size="icon" className="relative">
+      <div className="flex items-center justify-end gap-1.5 sm:gap-2">
+        {/* Notifications bell — same height as avatar for alignment */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative h-9 w-9 shrink-0 rounded-full"
+          aria-label="Notifications"
+        >
           <Bell className="h-5 w-5" />
-          <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-blue-500" />
+          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-blue-500 ring-2 ring-background" />
         </Button>
 
         {/* User menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative h-9 w-9 shrink-0 rounded-full p-0"
+            >
               <Avatar className="h-9 w-9">
-                <AvatarImage src="" alt={session?.user?.name ?? ""} />
+                <AvatarImage
+                  src={me?.profileImage?.url ?? ""}
+                  alt={displayName ?? ""}
+                />
                 <AvatarFallback className="bg-blue-600 text-white text-sm font-semibold">
-                  {initials ?? "A"}
+                  {initials ?? "?"}
                 </AvatarFallback>
               </Avatar>
             </Button>
@@ -54,7 +78,7 @@ export function Header() {
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">
-                  {session?.user?.name}
+                  {displayName}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground">
                   {session?.user?.email}
@@ -66,8 +90,8 @@ export function Header() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/settings">
-                <User className="mr-2 h-4 w-4" />
+              <Link href="/profile">
+                <UserIcon className="mr-2 h-4 w-4" />
                 Profile
               </Link>
             </DropdownMenuItem>

@@ -19,14 +19,12 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Bell, Send, Loader2 } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
 
 const notifSchema = z.object({
   title: z.string().min(1, "Title is required"),
   body: z.string().min(1, "Message is required"),
-  type: z.string().default("info"),
 });
 
 type NotifForm = z.infer<typeof notifSchema>;
@@ -42,7 +40,6 @@ export default function NotificationsPage() {
     formState: { errors },
   } = useForm<NotifForm>({
     resolver: zodResolver(notifSchema),
-    defaultValues: { type: "info" },
   });
 
   const onSubmit = (values: NotifForm) => {
@@ -97,15 +94,6 @@ export default function NotificationsPage() {
                 {errors.body && (
                   <p className="text-red-500 text-xs">{errors.body.message}</p>
                 )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="type">Type</Label>
-                <Input
-                  id="type"
-                  {...register("type")}
-                  placeholder="info"
-                />
               </div>
 
               {/* Preview */}

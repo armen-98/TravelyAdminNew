@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { DataTable, Column } from "@/components/tables/data-table";
 import {
   useReviews,
@@ -38,18 +39,43 @@ import {
   ExternalLink,
   MessageSquare,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { formatDate } from "@/lib/utils";
+import { canDelete } from "@/lib/permissions";
+
+type StatusFilter = "all" | "pending" | "approved" | "rejected";
+
+function reviewStatusParam(
+  filter: StatusFilter,
+): "pending" | "approved" | "rejected" | undefined {
+  if (filter === "all") return undefined;
+  return filter;
+}
 
 export default function ReviewsPage() {
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [deleteTarget, setDeleteTarget] = useState<PlaceReview | null>(null);
+  const { data: session } = useSession();
+  const sessionRole = session?.user?.role;
 
-  const { data, isLoading } = useReviews({ page });
+  const { data, isLoading } = useReviews({
+    page,
+    search: search || undefined,
+    reviewStatus: reviewStatusParam(statusFilter),
+  });
   const approve = useApproveReview();
   const reject = useRejectReview();
   const deleteReview = useDeleteReview();
 
-  const columns: Column<PlaceReview>[] = [
+  const columns: Column<PlaceReview>[] = useMemo(() => [
     {
       key: "place",
       header: "Place",
@@ -160,19 +186,24 @@ export default function ReviewsPage() {
                 Reject
               </DropdownMenuItem>
             ) : null}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-red-600 focus:text-red-600"
-              onClick={() => setDeleteTarget(review)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
+            {canDelete(sessionRole) && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-red-600 focus:text-red-600"
+                  onClick={() => setDeleteTarget(review)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       ),
     },
-  ];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ], [sessionRole, approve, reject]);
 
   return (
     <div className="space-y-6">
@@ -195,6 +226,23 @@ export default function ReviewsPage() {
         isLoading={isLoading}
         searchKey="comment"
         searchPlaceholder="Search reviews..."
+        onSearch={(val) => { setSearch(val); setPage(1); }}
+        filters={
+          <Select
+            value={statusFilter}
+            onValueChange={(v) => { setStatusFilter(v as StatusFilter); setPage(1); }}
+          >
+            <SelectTrigger className="h-9 w-36 text-sm">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+            </SelectContent>
+          </Select>
+        }
         page={page}
         totalPages={data?.totalPages}
         onPageChange={setPage}

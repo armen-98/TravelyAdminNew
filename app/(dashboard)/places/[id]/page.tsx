@@ -21,7 +21,7 @@ import {
   XCircle,
   Calendar,
 } from "lucide-react";
-import { formatDate, formatDateTime } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { useState } from "react";
 import {
   Dialog,
@@ -47,7 +47,7 @@ export default function PlaceDetailPage() {
   const approve = useApprovePlace();
   const reject = useRejectPlace();
 
-  const { data: reviews } = useQuery({
+  const { data: reviews, isLoading: reviewsLoading } = useQuery({
     queryKey: ["place-reviews", id],
     queryFn: async () => {
       const { data } = await api.get<{ data: PlaceReview[] }>(
@@ -142,6 +142,15 @@ export default function PlaceDetailPage() {
           )}
         </div>
       </div>
+
+      {place.isVerified === false && place.rejectionReason ? (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm">
+          <p className="font-medium text-destructive">Rejection reason</p>
+          <p className="text-muted-foreground mt-1 whitespace-pre-wrap">
+            {place.rejectionReason}
+          </p>
+        </div>
+      ) : null}
 
       {/* Images */}
       {place.images && place.images.length > 0 && (
@@ -306,7 +315,11 @@ export default function PlaceDetailPage() {
 
         <TabsContent value="reviews" className="mt-4">
           <div className="space-y-3">
-            {reviews && reviews.length > 0 ? (
+            {reviewsLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-20 rounded-lg" />
+              ))
+            ) : reviews && reviews.length > 0 ? (
               reviews.map((review: PlaceReview) => (
                 <Card key={review.id}>
                   <CardContent className="p-4">

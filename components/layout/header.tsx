@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { Bell, LogOut, User, Settings, Menu } from "lucide-react";
+import { Bell, LogOut, User, Settings } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -33,7 +33,7 @@ export function Header() {
 
       <div className="flex items-center gap-2">
         {/* Notifications bell */}
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
           <Bell className="h-5 w-5" />
           <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-blue-500" />
         </Button>

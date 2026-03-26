@@ -28,6 +28,24 @@ export function useCategory(id: number) {
   });
 }
 
+function getApiErrorMessage(error: unknown, fallback: string): string {
+  if (
+    error &&
+    typeof error === "object" &&
+    "response" in error &&
+    error.response &&
+    typeof error.response === "object" &&
+    "data" in error.response &&
+    error.response.data &&
+    typeof error.response.data === "object" &&
+    "message" in error.response.data
+  ) {
+    const msg = (error.response.data as { message: string | string[] }).message;
+    return Array.isArray(msg) ? msg.join(", ") : msg;
+  }
+  return fallback;
+}
+
 export function useCreateCategory() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -39,7 +57,8 @@ export function useCreateCategory() {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       toast.success("Category created");
     },
-    onError: () => toast.error("Failed to create category"),
+    onError: (error) =>
+      toast.error(getApiErrorMessage(error, "Failed to create category")),
   });
 }
 
@@ -54,7 +73,8 @@ export function useUpdateCategory() {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       toast.success("Category updated");
     },
-    onError: () => toast.error("Failed to update category"),
+    onError: (error) =>
+      toast.error(getApiErrorMessage(error, "Failed to update category")),
   });
 }
 
@@ -69,7 +89,8 @@ export function useToggleCategoryActive() {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       toast.success("Category status updated");
     },
-    onError: () => toast.error("Failed to update category status"),
+    onError: (error) =>
+      toast.error(getApiErrorMessage(error, "Failed to update category status")),
   });
 }
 
@@ -84,6 +105,7 @@ export function useDeleteCategory() {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       toast.success("Category deleted");
     },
-    onError: () => toast.error("Failed to delete category"),
+    onError: (error) =>
+      toast.error(getApiErrorMessage(error, "Failed to delete category")),
   });
 }

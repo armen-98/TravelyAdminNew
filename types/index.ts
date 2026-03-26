@@ -29,6 +29,7 @@ export interface Place {
   website?: string | null;
   isActive: boolean;
   isVerified: boolean | null;
+  rejectionReason?: string | null;
   isFeatured: boolean;
   averageRating: number;
   reviewCount: number;
@@ -157,12 +158,14 @@ export interface ApiResponse<T> {
 export interface DashboardStats {
   totalUsers: number;
   totalPlaces: number;
-  totalBlogs: number;
   pendingPlaces: number;
-  activeUsers: number;
-  proUsers: number;
-  recentUsers: ChartDataPoint[];
-  recentPlaces: ChartDataPoint[];
+  verifiedPlaces: number;
+  rejectedPlaces: number;
+  totalReviews: number;
+  pendingReviews: number;
+  totalBlogs: number;
+  placeStatus: { name: string; value: number }[];
+  growthData: { month: string; users: number; places: number }[];
 }
 
 export interface ChartDataPoint {

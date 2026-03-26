@@ -12,6 +12,7 @@ interface PlacesParams {
   categoryId?: number;
   isActive?: boolean;
   isVerified?: boolean;
+  verificationFilter?: "pending" | "approved" | "rejected";
 }
 
 export function usePlaces(params: PlacesParams = {}) {

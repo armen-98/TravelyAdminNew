@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -65,6 +66,7 @@ export default function BlogEditorPage() {
 
   const isActive = watch("isActive");
   const content = watch("description");
+  const categoryId = watch("categoryId");
 
   useEffect(() => {
     if (blog && !isNew) {
@@ -108,6 +110,17 @@ export default function BlogEditorPage() {
           {isNew ? "New Blog Post" : "Edit Blog Post"}
         </h1>
       </div>
+      {!isNew && blog?.user?.id != null && (
+        <p className="text-sm text-muted-foreground">
+          Author:{" "}
+          <Link
+            href={`/users/${blog.user.id}`}
+            className="font-medium text-blue-600 hover:underline"
+          >
+            {blog.user.fullName}
+          </Link>
+        </p>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <Card>
@@ -157,15 +170,25 @@ export default function BlogEditorPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Category</Label>
+              <Label>Category (optional)</Label>
               <Select
-                onValueChange={(val) => setValue("categoryId", Number(val))}
-                defaultValue={blog?.category?.id?.toString()}
+                value={
+                  categoryId != null && !Number.isNaN(Number(categoryId))
+                    ? String(categoryId)
+                    : "__none__"
+                }
+                onValueChange={(val) =>
+                  setValue(
+                    "categoryId",
+                    val === "__none__" ? undefined : Number(val)
+                  )
+                }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder="Uncategorized (global)" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="__none__">Uncategorized (global)</SelectItem>
                   {categories?.data?.map((cat: import("@/types").Category) => (
                     <SelectItem key={cat.id} value={String(cat.id)}>
                       {cat.name}

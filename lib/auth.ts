@@ -30,7 +30,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!credentials?.accessToken || !credentials?.id) return null;
 
         const role = credentials.role as string;
-        if (!["super-admin", "admin"].includes(role)) return null;
+        if (!["super-admin", "admin", "moderator"].includes(role)) return null;
 
         return {
           id: credentials.id as string,

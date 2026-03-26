@@ -1,7 +1,9 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
+import type { DashboardStats } from "@/types";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import {
   Users,
@@ -20,39 +22,17 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  Cell,
-  Legend,
-} from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface AdminStats {
-  totalUsers: number;
-  totalPlaces: number;
-  pendingPlaces: number;
-  verifiedPlaces: number;
-  rejectedPlaces: number;
-  totalReviews: number;
-  pendingReviews: number;
-  totalBlogs: number;
-  placeStatus: { name: string; value: number }[];
-  growthData: { month: string; users: number; places: number }[];
-}
+const GrowthChart = dynamic(
+  () => import("@/components/dashboard/charts").then((m) => m.GrowthChart),
+  { ssr: false, loading: () => <Skeleton className="h-60 w-full rounded" /> }
+);
 
-const STATUS_COLORS: Record<string, string> = {
-  Approved: "#10b981",
-  Pending:  "#f59e0b",
-  Rejected: "#ef4444",
-};
+const PlaceStatusChart = dynamic(
+  () => import("@/components/dashboard/charts").then((m) => m.PlaceStatusChart),
+  { ssr: false, loading: () => <Skeleton className="h-60 w-full rounded" /> }
+);
 
 function DashboardSkeleton() {
   return (
@@ -71,10 +51,10 @@ function DashboardSkeleton() {
 }
 
 export default function DashboardPage() {
-  const { data: stats, isLoading, error } = useQuery<AdminStats>({
+  const { data: stats, isLoading, error } = useQuery<DashboardStats>({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const { data } = await api.get<AdminStats>("/admin/stats");
+      const { data } = await api.get<DashboardStats>("/admin/stats");
       return data;
     },
     staleTime: 60_000,
@@ -170,47 +150,7 @@ export default function DashboardPage() {
             <CardDescription>Monthly new users and places (last 7 months)</CardDescription>
           </CardHeader>
           <CardContent>
-            {stats.growthData.length === 0 ? (
-              <div className="h-60 flex items-center justify-center text-muted-foreground text-sm">
-                No growth data yet.
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height={240}>
-                <AreaChart data={stats.growthData}>
-                  <defs>
-                    <linearGradient id="usersGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#3b82f6" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}   />
-                    </linearGradient>
-                    <linearGradient id="placesGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#10b981" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}   />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip />
-                  <Legend />
-                  <Area
-                    type="monotone"
-                    dataKey="users"
-                    name="Users"
-                    stroke="#3b82f6"
-                    fill="url(#usersGrad)"
-                    strokeWidth={2}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="places"
-                    name="Places"
-                    stroke="#10b981"
-                    fill="url(#placesGrad)"
-                    strokeWidth={2}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            )}
+            <GrowthChart data={stats.growthData} />
           </CardContent>
         </Card>
 
@@ -226,22 +166,7 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={stats.placeStatus} barSize={56}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip />
-                <Bar dataKey="value" name="Places" radius={[6, 6, 0, 0]}>
-                  {stats.placeStatus.map((entry) => (
-                    <Cell
-                      key={entry.name}
-                      fill={STATUS_COLORS[entry.name] ?? "#6366f1"}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <PlaceStatusChart data={stats.placeStatus} />
           </CardContent>
         </Card>
       </div>

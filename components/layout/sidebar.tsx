@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MapPinned, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
@@ -27,14 +27,24 @@ export function Sidebar() {
       >
         {/* Logo */}
         <div className="flex items-center gap-3 px-4 py-5 border-b border-sidebar-border">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-sidebar-primary flex-shrink-0">
-            <MapPinned className="w-4 h-4 text-sidebar-primary-foreground" />
-          </div>
-          {!collapsed && (
-            <span className="font-bold text-sidebar-foreground text-lg">
-              Travely
-            </span>
-          )}
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 shrink-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/travely-logo.svg"
+              alt=""
+              width={36}
+              height={36}
+              className="h-9 w-9"
+            />
+            {!collapsed && (
+              <span className="font-bold text-sidebar-foreground text-lg">
+                Travely
+              </span>
+            )}
+          </Link>
         </div>
 
         {/* Nav */}

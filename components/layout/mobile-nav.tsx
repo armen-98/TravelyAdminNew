@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { MapPinned, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -32,12 +32,22 @@ export function MobileNav() {
         <SheetContent side="left" className="w-64 p-0 bg-sidebar border-sidebar-border">
           <SheetHeader className="px-4 py-5 border-b border-sidebar-border">
             <SheetTitle className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-sidebar-primary">
-                <MapPinned className="w-4 h-4 text-sidebar-primary-foreground" />
-              </div>
-              <span className="font-bold text-sidebar-foreground text-lg">
-                Travely
-              </span>
+              <Link
+                href="/"
+                className="flex items-center gap-2.5 shrink-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/travely-logo.svg"
+                  alt=""
+                  width={36}
+                  height={36}
+                  className="h-9 w-9"
+                />
+                <span className="font-bold text-lg tracking-tight text-sidebar-foreground">
+                  Travely
+                </span>
+              </Link>
             </SheetTitle>
           </SheetHeader>
           <nav className="space-y-1 px-2 py-4">

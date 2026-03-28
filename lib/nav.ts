@@ -11,6 +11,7 @@ import {
   Mail,
   UserCircle,
   Settings,
+  Globe2,
 } from "lucide-react";
 
 export type NavItem = {
@@ -37,6 +38,12 @@ export const navItems: NavItem[] = [
     title: "Places",
     href: "/places",
     icon: MapPin,
+    roles: ["super-admin", "admin", "moderator"],
+  },
+  {
+    title: "Locations",
+    href: "/locations",
+    icon: Globe2,
     roles: ["super-admin", "admin", "moderator"],
   },
   {

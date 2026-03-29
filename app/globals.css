@@ -72,4 +72,21 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Prevent accidental text selection on controls (incl. nested text in WebKit) */
+  button,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  [role="button"] {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+  }
+
+  button *,
+  [role="button"] * {
+    -webkit-user-select: none;
+    user-select: none;
+  }
 }

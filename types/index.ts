@@ -117,6 +117,19 @@ export interface Location {
   parent?: Location;
 }
 
+/** Nested country → states → cities from `GET /admin/locations`. */
+export interface AdminLocationNode {
+  id: number;
+  name: string;
+  type: "country" | "state" | "city";
+  parentId: number | null;
+  image?: FileEntity | null;
+  imageId?: number | null;
+  children?: AdminLocationNode[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface PlaceReview {
   id: number;
   placeId: number;

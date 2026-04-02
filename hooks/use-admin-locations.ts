@@ -27,6 +27,7 @@ export function useCreateAdminLocation() {
       type: "country" | "state" | "city";
       parentId?: number;
       imageId?: number | null;
+      countryCode?: string;
     }) => {
       const { data } = await api.post<{ data: AdminLocationNode }>(
         "/admin/locations",
@@ -61,6 +62,7 @@ export function useUpdateAdminLocation() {
         name?: string;
         parentId?: number;
         imageId?: number | null;
+        countryCode?: string | null;
       };
     }) => {
       const { data } = await api.patch<{ data: AdminLocationNode }>(

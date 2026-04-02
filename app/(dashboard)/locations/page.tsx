@@ -174,6 +174,7 @@ export default function LocationsPage() {
     null
   );
   const [formName, setFormName] = useState("");
+  const [formCountryCode, setFormCountryCode] = useState("");
   const [formImageId, setFormImageId] = useState("");
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [formParentId, setFormParentId] = useState<string>("");
@@ -204,6 +205,7 @@ export default function LocationsPage() {
     if (dialog.mode === "closed") return;
     if (dialog.mode === "create") {
       setFormName("");
+      setFormCountryCode("");
       setFormImageId("");
       setFormParentId("");
       setImagePreviewUrl(null);
@@ -211,6 +213,9 @@ export default function LocationsPage() {
     }
     const n = dialog.node;
     setFormName(n.name);
+    setFormCountryCode(
+      n.type === "country" && n.countryCode ? String(n.countryCode) : ""
+    );
     const hasImageId =
       (n.type === "country" || n.type === "city") && n.imageId != null;
     setFormImageId(hasImageId ? String(n.imageId!) : "");
@@ -249,6 +254,12 @@ export default function LocationsPage() {
     const name = formName.trim();
     if (!name) return;
 
+    const codeRaw = formCountryCode.trim().toUpperCase();
+    if (codeRaw.length === 1) {
+      toast.error("Country code must be 2 letters (e.g. AM) or empty.");
+      return;
+    }
+
     if (dialog.mode === "create") {
       if (dialog.type === "country") {
         const t = formImageId.trim();
@@ -258,8 +269,10 @@ export default function LocationsPage() {
           name: string;
           type: "country";
           imageId?: number | null;
+          countryCode?: string;
         } = { name, type: "country" };
         if (t !== "" && Number.isFinite(img)) payload.imageId = img;
+        if (codeRaw.length === 2) payload.countryCode = codeRaw;
         create.mutate(payload, { onSuccess: closeDialog });
         return;
       }
@@ -293,6 +306,7 @@ export default function LocationsPage() {
         name: string;
         parentId?: number;
         imageId?: number | null;
+        countryCode?: string | null;
       } = { name };
 
       if (node.type === "country" || node.type === "city") {
@@ -302,6 +316,11 @@ export default function LocationsPage() {
           const n = Number(t);
           if (Number.isFinite(n)) body.imageId = n;
         }
+      }
+
+      if (node.type === "country") {
+        if (codeRaw.length === 0) body.countryCode = null;
+        else if (codeRaw.length === 2) body.countryCode = codeRaw;
       }
 
       if (node.type === "state" && formParentId) {
@@ -377,7 +396,17 @@ export default function LocationsPage() {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold truncate">{country.name}</p>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <p className="font-semibold truncate">{country.name}</p>
+                          {country.countryCode ? (
+                            <Badge
+                              variant="secondary"
+                              className="shrink-0 font-mono text-[0.65rem] px-1.5 py-0"
+                            >
+                              {country.countryCode}
+                            </Badge>
+                          ) : null}
+                        </div>
                         <p className="text-sm text-muted-foreground">
                           {nStates} {nStates === 1 ? "state" : "states"}
                           <span className="mx-1.5">·</span>
@@ -455,8 +484,17 @@ export default function LocationsPage() {
                         {activeCountry.name}
                       </SheetTitle>
                       <SheetDescription>
-                        States and cities used when users pick a location for
-                        places.
+                        {activeCountry.countryCode ? (
+                          <span className="font-mono font-medium text-foreground">
+                            ISO {activeCountry.countryCode}
+                          </span>
+                        ) : (
+                          <span>No ISO country code set.</span>
+                        )}
+                        <span className="block mt-1 text-muted-foreground font-normal">
+                          States and cities used when users pick a location for
+                          places.
+                        </span>
                       </SheetDescription>
                     </div>
                   </div>
@@ -651,6 +689,28 @@ export default function LocationsPage() {
                 placeholder="Name"
               />
             </div>
+            {((dialog.mode === "create" && dialog.type === "country") ||
+              (dialog.mode === "edit" && dialog.node.type === "country")) && (
+              <div className="grid gap-2">
+                <Label htmlFor="loc-country-code">ISO country code (optional)</Label>
+                <Input
+                  id="loc-country-code"
+                  className="font-mono uppercase max-w-[8rem]"
+                  maxLength={2}
+                  value={formCountryCode}
+                  onChange={(e) =>
+                    setFormCountryCode(
+                      e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase()
+                    )
+                  }
+                  placeholder="e.g. AM"
+                  autoComplete="off"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Two-letter code (ISO 3166-1 alpha-2). Clear to remove.
+                </p>
+              </div>
+            )}
             {dialog.mode === "create" && dialog.type === "country" && (
               <LocationCoverImageFields
                 formImageId={formImageId}

@@ -123,6 +123,8 @@ export interface AdminLocationNode {
   name: string;
   type: "country" | "state" | "city";
   parentId: number | null;
+  /** ISO 3166-1 alpha-2; only set for `type === "country"`. */
+  countryCode?: string | null;
   image?: FileEntity | null;
   imageId?: number | null;
   children?: AdminLocationNode[];

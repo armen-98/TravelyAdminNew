@@ -20,9 +20,10 @@ import {
   CheckCircle,
   XCircle,
   Calendar,
+  History,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -35,7 +36,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
-import type { PlaceReview } from "@/types";
+import type { PlaceModerationHistoryItem, PlaceReview } from "@/types";
+
+function moderationEventTitle(type: string): string {
+  switch (type) {
+    case "submitted":
+      return "Submitted for review";
+    case "resubmitted":
+      return "Re-submitted by owner";
+    case "rejected":
+      return "Rejected";
+    case "approved":
+      return "Approved";
+    case "verification_revoked":
+      return "Verification revoked";
+    default:
+      return type;
+  }
+}
 
 export default function PlaceDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -46,6 +64,14 @@ export default function PlaceDetailPage() {
   const { data: place, isLoading } = usePlace(Number(id));
   const approve = useApprovePlace();
   const reject = useRejectPlace();
+
+  const moderationEntriesNewestFirst = useMemo(
+    () =>
+      place?.moderationHistory?.length
+        ? [...place.moderationHistory].reverse()
+        : [],
+    [place?.moderationHistory],
+  );
 
   const { data: reviews, isLoading: reviewsLoading } = useQuery({
     queryKey: ["place-reviews", id],
@@ -218,14 +244,115 @@ export default function PlaceDetailPage() {
         </Card>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="info">
+      {/* Tabs: Reviews first, Moderation, Info last (reversed from previous Info-then-Reviews) */}
+      <Tabs defaultValue="reviews">
         <TabsList>
-          <TabsTrigger value="info">Info</TabsTrigger>
           <TabsTrigger value="reviews">
             Reviews ({place.reviewCount ?? 0})
           </TabsTrigger>
+          <TabsTrigger value="moderation">Moderation</TabsTrigger>
+          <TabsTrigger value="info">Info</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="reviews" className="mt-4">
+          <div className="space-y-3">
+            {reviewsLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-20 rounded-lg" />
+              ))
+            ) : reviews && reviews.length > 0 ? (
+              reviews.map((review: PlaceReview) => (
+                <Card key={review.id}>
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="font-medium text-sm">
+                            {review.user?.fullName ?? "Anonymous"}
+                          </p>
+                          <div className="flex">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-3 w-3 ${
+                                  i < review.rating
+                                    ? "text-yellow-500 fill-yellow-500"
+                                    : "text-muted-foreground"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        {review.comment && (
+                          <p className="text-sm text-muted-foreground">
+                            {review.comment}
+                          </p>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground flex-shrink-0">
+                        {formatDate(review.createdAt)}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card>
+                <CardContent className="p-8 text-center text-muted-foreground">
+                  No reviews yet.
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="moderation" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <History className="h-4 w-4" />
+                Moderation history
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {moderationEntriesNewestFirst.length > 0 ? (
+                <ul className="space-y-4 border-l-2 border-muted ml-1.5 pl-5">
+                  {moderationEntriesNewestFirst.map((entry: PlaceModerationHistoryItem) => (
+                    <li key={entry.id} className="text-sm relative">
+                      <span className="absolute -left-[1.15rem] top-1.5 h-2 w-2 rounded-full bg-muted-foreground/40" />
+                      <p className="font-medium">{moderationEventTitle(entry.eventType)}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {formatDate(entry.createdAt)}
+                        {entry.actor?.fullName || entry.actor?.email
+                          ? ` · ${entry.actor?.fullName ?? entry.actor?.email ?? ""}`
+                          : null}
+                      </p>
+                      {entry.eventType === "rejected" && entry.reason ? (
+                        <p className="text-muted-foreground mt-2 whitespace-pre-wrap rounded-md bg-muted/50 px-3 py-2 text-xs">
+                          {entry.reason}
+                        </p>
+                      ) : null}
+                      {entry.eventType === "resubmitted" && entry.reason ? (
+                        <div className="mt-2 rounded-md border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs">
+                          <p className="font-medium text-amber-900 dark:text-amber-200">
+                            Admin feedback at time of re-submit
+                          </p>
+                          <p className="text-muted-foreground mt-1 whitespace-pre-wrap">
+                            {entry.reason}
+                          </p>
+                        </div>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No recorded events yet. Submissions and review actions are logged from when this feature is deployed; run the latest migration and new activity will appear here.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="info" className="space-y-4 mt-4">
           <Card>
@@ -311,58 +438,6 @@ export default function PlaceDetailPage() {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="reviews" className="mt-4">
-          <div className="space-y-3">
-            {reviewsLoading ? (
-              Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-20 rounded-lg" />
-              ))
-            ) : reviews && reviews.length > 0 ? (
-              reviews.map((review: PlaceReview) => (
-                <Card key={review.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium text-sm">
-                            {review.user?.fullName ?? "Anonymous"}
-                          </p>
-                          <div className="flex">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`h-3 w-3 ${
-                                  i < review.rating
-                                    ? "text-yellow-500 fill-yellow-500"
-                                    : "text-muted-foreground"
-                                }`}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                        {review.comment && (
-                          <p className="text-sm text-muted-foreground">
-                            {review.comment}
-                          </p>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground flex-shrink-0">
-                        {formatDate(review.createdAt)}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <Card>
-                <CardContent className="p-8 text-center text-muted-foreground">
-                  No reviews yet.
-                </CardContent>
-              </Card>
-            )}
-          </div>
         </TabsContent>
       </Tabs>
 

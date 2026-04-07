@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   Table,
   TableBody,
@@ -54,13 +54,17 @@ export function DataTable<T = any>({
   onRowClick,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
+  const onSearchRef = useRef(onSearch);
+  onSearchRef.current = onSearch;
 
-  // Debounce server-side search (300 ms)
+  // Debounce server-side search (300 ms). Do not depend on `onSearch` — parent pages
+  // pass inline callbacks that change every render; that would re-fire this effect,
+  // call onSearch(""), and reset pagination to page 1.
   useEffect(() => {
-    if (!onSearch) return;
-    const timer = setTimeout(() => onSearch(search), 300);
+    if (!onSearchRef.current) return;
+    const timer = setTimeout(() => onSearchRef.current?.(search), 300);
     return () => clearTimeout(timer);
-  }, [search, onSearch]);
+  }, [search]);
 
   const filtered = useMemo(() => {
     // When onSearch is provided, filtering is handled server-side

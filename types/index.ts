@@ -16,6 +16,14 @@ export interface User {
   deactivatedAt?: string;
 }
 
+export interface PlaceModerationHistoryItem {
+  id: number;
+  eventType: string;
+  reason: string | null;
+  createdAt: string;
+  actor: Pick<User, "id" | "fullName" | "email"> | null;
+}
+
 export interface Place {
   id: number;
   name: string;
@@ -45,6 +53,8 @@ export interface Place {
   tags?: Tag[];
   createdAt: string;
   updatedAt: string;
+  /** Present on `GET /admin/places/:id` — full verification timeline */
+  moderationHistory?: PlaceModerationHistoryItem[];
 }
 
 export interface Category {

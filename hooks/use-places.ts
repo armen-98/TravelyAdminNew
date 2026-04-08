@@ -45,8 +45,9 @@ export function useApprovePlace() {
       const { data } = await api.patch(`/admin/places/${id}/approve`);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["places"] });
+      queryClient.invalidateQueries({ queryKey: ["places", id] });
       toast.success("Place approved successfully");
     },
     onError: () => toast.error("Failed to approve place"),
@@ -60,8 +61,9 @@ export function useRejectPlace() {
       const { data } = await api.patch(`/admin/places/${id}/reject`, { reason });
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({ queryKey: ["places"] });
+      queryClient.invalidateQueries({ queryKey: ["places", id] });
       toast.success("Place rejected");
     },
     onError: () => toast.error("Failed to reject place"),

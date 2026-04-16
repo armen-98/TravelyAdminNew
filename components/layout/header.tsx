@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession, signOut, signIn } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, Bug, LogOut, User as UserIcon, Settings } from "lucide-react";
+import { Bell, LogOut, User as UserIcon, Settings } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
 import { toast } from "sonner";

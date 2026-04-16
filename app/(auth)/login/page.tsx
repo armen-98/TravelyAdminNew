@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, MapPin, ShieldAlert } from "lucide-react";
 import axios, { AxiosError } from "axios";
 import type { ApiSignInResponse } from "@/lib/auth";
+import { getClientApiBaseUrl } from "@/lib/api";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -40,7 +41,7 @@ export default function LoginPage() {
     let apiData: ApiSignInResponse;
     try {
       const { data } = await axios.post<ApiSignInResponse>(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/sign-in`,
+        `${getClientApiBaseUrl()}/auth/sign-in`,
         { email: formData.email, password: formData.password }
       );
       apiData = data;

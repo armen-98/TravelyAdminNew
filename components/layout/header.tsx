@@ -1,10 +1,19 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useSession, signOut, signIn } from "next-auth/react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, LogOut, User as UserIcon, Settings } from "lucide-react";
 import Link from "next/link";
-import api from "@/lib/api";
+import axios from "axios";
+import { toast } from "sonner";
+import api, {
+  getApiEnvironment,
+  setApiEnvironment,
+  resolveApiBaseUrl,
+  DEFAULT_API_ENVIRONMENT,
+  type ApiEnvironment,
+} from "@/lib/api";
 import type { User as MeUser } from "@/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -17,9 +26,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "./mobile-nav";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function Header() {
   const { data: session } = useSession();
+  const queryClient = useQueryClient();
+  const [apiEnvironment, setApiEnvironmentState] = useState<ApiEnvironment>(() =>
+    typeof window !== "undefined" ? getApiEnvironment() : DEFAULT_API_ENVIRONMENT
+  );
+  const [isSwitching, setIsSwitching] = useState(false);
+  const [canUseLocalEnvironment, setCanUseLocalEnvironment] = useState(false);
 
   const { data: me } = useQuery({
     queryKey: ["me"],
@@ -30,12 +52,69 @@ export function Header() {
   });
 
   const displayName = me?.fullName ?? session?.user?.name;
+  const isAdmin = session?.user?.role === "admin" || session?.user?.role === "super-admin";
   const initials = displayName
     ?.split(/\s+/)
     .map((n: string) => n[0])
     .join("")
     .toUpperCase()
     .slice(0, 2);
+
+  useEffect(() => {
+    setApiEnvironmentState(getApiEnvironment());
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const host = window.location.hostname;
+    setCanUseLocalEnvironment(
+      host === "localhost" || host === "127.0.0.1" || host === "::1"
+    );
+  }, []);
+
+  const handleEnvironmentChange = async (value: string) => {
+    const env = value as ApiEnvironment;
+    const email = session?.user?.email;
+    if (!email) return;
+
+    const previousEnv = getApiEnvironment();
+    if (env === previousEnv) return;
+
+    setIsSwitching(true);
+    // Switch axios base URL immediately so the token-by-email call goes to the new env
+    setApiEnvironment(env);
+    setApiEnvironmentState(env);
+
+    try {
+      const newBaseUrl = resolveApiBaseUrl(env);
+      const { data } = await axios.post<{ user: { id: number; fullName: string; email: string; role: { id: number; name: string } }; token: string }>(
+        `${newBaseUrl}/auth/token-by-email`,
+        { email }
+      );
+
+      // Re-establish session with the fresh token from the new environment
+      await signIn("credentials", {
+        id: String(data.user.id),
+        email: data.user.email,
+        name: data.user.fullName,
+        role: data.user.role?.name,
+        accessToken: data.token,
+        redirect: false,
+      });
+
+      // Update the axios instance with the new token and invalidate cached queries
+      api.defaults.baseURL = newBaseUrl;
+      await queryClient.invalidateQueries();
+      toast.success(`Switched to ${env}`);
+    } catch {
+      // Revert if the new environment can't authenticate this user
+      setApiEnvironment(previousEnv);
+      setApiEnvironmentState(previousEnv);
+      toast.error(`Could not authenticate on ${env}. Reverted.`);
+    } finally {
+      setIsSwitching(false);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/95 backdrop-blur px-4 md:px-6 gap-4">
@@ -44,6 +123,24 @@ export function Header() {
       </div>
 
       <div className="flex items-center justify-end gap-1.5 sm:gap-2">
+        {isAdmin ? (
+          <Select
+            value={apiEnvironment}
+            disabled={isSwitching}
+            onValueChange={handleEnvironmentChange}
+          >
+            <SelectTrigger className="h-9 w-[145px] text-xs sm:text-sm">
+              <SelectValue placeholder="API Environment" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="production">Production</SelectItem>
+              <SelectItem value="staging">Staging</SelectItem>
+              {canUseLocalEnvironment ? (
+                <SelectItem value="local">Local</SelectItem>
+              ) : null}
+            </SelectContent>
+          </Select>
+        ) : null}
         {/* Notifications bell — same height as avatar for alignment */}
         <Button
           variant="ghost"

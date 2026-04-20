@@ -109,12 +109,16 @@ export default function ContactRequestDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardContent className="p-5 space-y-3">
-            <p className="text-sm text-muted-foreground">User</p>
+            <p className="text-sm text-muted-foreground">Sender</p>
             <p className="font-medium">
-              {request.user?.fullName ?? request.user?.email ?? "Unknown"}
+              {request.user?.fullName ??
+                request.user?.email ??
+                request.name ??
+                request.email ??
+                "Guest"}
             </p>
             <p className="text-sm text-muted-foreground">
-              {request.user?.email ?? ""}
+              {request.user?.email ?? request.email ?? ""}
             </p>
           </CardContent>
         </Card>
@@ -128,6 +132,27 @@ export default function ContactRequestDetailPage() {
                 Updated: {formatDate(request.updatedAt)}
               </p>
             ) : null}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardContent className="p-5 space-y-3">
+            <p className="text-sm text-muted-foreground">Source</p>
+            <Badge variant="outline" className="uppercase">
+              {request.source ?? "mobile"}
+            </Badge>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-5 space-y-3">
+            <p className="text-sm text-muted-foreground">Has User Account</p>
+            {request.user?.id ? (
+              <Badge variant="success">Yes</Badge>
+            ) : (
+              <Badge variant="secondary">No</Badge>
+            )}
           </CardContent>
         </Card>
       </div>

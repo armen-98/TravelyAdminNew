@@ -20,7 +20,11 @@ export function useNotifications(params: { page?: number; limit?: number } = {})
 export function useSendNotification() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: { title: string; body: string }) => {
+    mutationFn: async (payload: {
+      title: string;
+      body: string;
+      userIds?: number[];
+    }) => {
       const { data } = await api.post("/notifications/broadcast", payload);
       return data;
     },

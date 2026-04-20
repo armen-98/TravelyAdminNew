@@ -78,3 +78,20 @@ export function useAssignUserRole() {
     onError: () => toast.error("Failed to update user role"),
   });
 }
+
+export function useSetUserPro() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, isPro }: { id: number; isPro: boolean }) => {
+      const { data } = await api.patch(`/admin/users/${id}/pro`, { isPro });
+      return data;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      toast.success(
+        variables.isPro ? "User upgraded to Pro successfully" : "User downgraded to Free successfully"
+      );
+    },
+    onError: () => toast.error("Failed to update user plan"),
+  });
+}

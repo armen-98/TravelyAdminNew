@@ -48,7 +48,7 @@ import {
 import { formatDate, getRoleBadgeVariant } from "@/lib/utils";
 import { toast } from "sonner";
 import { canManageUsers } from "@/lib/permissions";
-import { useAssignUserRole } from "@/hooks/use-users";
+import { useAssignUserRole, useSetUserPro } from "@/hooks/use-users";
 
 function initials(name?: string) {
   return (name ?? "?")
@@ -66,6 +66,7 @@ export default function UserDetailPage() {
   const { data: session } = useSession();
   const sessionRole = session?.user?.role;
   const assignRole = useAssignUserRole();
+  const setUserPro = useSetUserPro();
   const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
   const [pendingRole, setPendingRole] = useState<string | null>(null);
 
@@ -190,6 +191,17 @@ export default function UserDetailPage() {
             </div>
 
             {/* Activate / Deactivate */}
+            <Button
+              variant={user.isPro ? "secondary" : "default"}
+              size="sm"
+              onClick={() =>
+                setUserPro.mutate({ id: Number(id), isPro: !user.isPro })
+              }
+              disabled={setUserPro.isPending}
+            >
+              {user.isPro ? "Set Free" : "Set Pro"}
+            </Button>
+
             {user.isActive ? (
               <Button
                 variant="destructive"

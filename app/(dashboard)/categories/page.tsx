@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useSession } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -61,6 +62,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { isSuperAdmin } from "@/lib/permissions";
 
 // ── Schema ─────────────────────────────────────────────────────────────────
 
@@ -69,6 +71,7 @@ const categorySchema = z.object({
   description: z.string().optional(),
   icon: z.string().optional(),
   color: z.string().optional(),
+  isPro: z.boolean().default(false),
   sortOrder: z.coerce.number().default(0),
   parentId: z.coerce.number().nullable().optional(),
 });
@@ -231,6 +234,8 @@ function CategoryRow({
 // ── Page ───────────────────────────────────────────────────────────────────
 
 export default function CategoriesPage() {
+  const { data: session } = useSession();
+  const canChangeProCategory = isSuperAdmin(session?.user?.role);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Category | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
@@ -260,7 +265,15 @@ export default function CategoriesPage() {
   const openCreate = (parentId: number | null = null) => {
     setEditTarget(null);
     setDefaultParentId(parentId);
-    reset({ name: "", description: "", icon: "", color: "", sortOrder: 0, parentId: parentId ?? undefined });
+    reset({
+      name: "",
+      description: "",
+      icon: "",
+      color: "",
+      isPro: false,
+      sortOrder: 0,
+      parentId: parentId ?? undefined,
+    });
     setDrawerOpen(true);
   };
 
@@ -272,6 +285,7 @@ export default function CategoriesPage() {
       description: cat.description ?? "",
       icon: cat.icon ?? "",
       color: cat.color ?? "",
+      isPro: cat.isPro,
       sortOrder: cat.sortOrder,
       parentId: cat.parentId ?? undefined,
     });
@@ -281,6 +295,7 @@ export default function CategoriesPage() {
   const onSubmit = (values: CategoryForm) => {
     const payload = {
       ...values,
+      isPro: canChangeProCategory ? values.isPro : undefined,
       parentId: values.parentId || null,
     };
     if (editTarget) {
@@ -436,6 +451,29 @@ export default function CategoriesPage() {
                     />
                   )}
                 </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="isPro">Plan</Label>
+                {!canChangeProCategory && (
+                  <span className="text-xs text-muted-foreground">Only super admin can change</span>
+                )}
+              </div>
+              <div className="flex items-center justify-between rounded-md border px-3 py-2">
+                <div>
+                  <p className="text-sm font-medium">Pro Category</p>
+                  <p className="text-xs text-muted-foreground">
+                    Mark this category as visible for Pro users.
+                  </p>
+                </div>
+                <Switch
+                  id="isPro"
+                  checked={watch("isPro")}
+                  onCheckedChange={(checked) => setValue("isPro", checked)}
+                  disabled={!canChangeProCategory}
+                />
               </div>
             </div>
 

@@ -21,7 +21,8 @@ import { ExternalLink, Mail } from "lucide-react";
 
 export default function ContactPage() {
   const [page, setPage] = useState(1);
-  const { data, isLoading } = useContactRequests({ page });
+  const [search, setSearch] = useState("");
+  const { data, isLoading } = useContactRequests({ page, search: search || undefined });
   const router = useRouter();
   const resolveMutation = useResolveContactRequest();
 
@@ -34,7 +35,7 @@ export default function ContactPage() {
   const columns: Column<ContactRequest>[] = [
     {
       key: "user",
-      header: "User",
+      header: "Sender",
       cell: (req) => (
         req.user?.id ? (
           <Link
@@ -45,9 +46,14 @@ export default function ContactPage() {
             {req.user?.fullName ?? req.user?.email ?? `#${req.user.id}`}
           </Link>
         ) : (
-          <span className="text-sm text-muted-foreground">
-            {req.user?.fullName ?? req.user?.email ?? "Unknown"}
-          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-medium truncate">
+              {req.name ?? req.email ?? "Guest"}
+            </p>
+            {req.email ? (
+              <p className="text-xs text-muted-foreground truncate">{req.email}</p>
+            ) : null}
+          </div>
         )
       ),
     },
@@ -59,6 +65,25 @@ export default function ContactPage() {
           {req.subject}
         </p>
       ),
+    },
+    {
+      key: "source",
+      header: "Source",
+      cell: (req) => (
+        <Badge variant="outline" className="uppercase">
+          {req.source ?? "mobile"}
+        </Badge>
+      ),
+    },
+    {
+      key: "hasUser",
+      header: "Has User",
+      cell: (req) =>
+        req.user?.id ? (
+          <Badge variant="success">Yes</Badge>
+        ) : (
+          <Badge variant="secondary">No</Badge>
+        ),
     },
     {
       key: "message",
@@ -180,7 +205,11 @@ export default function ContactPage() {
         data={(data?.data ?? []) as ContactRequest[]}
         isLoading={isLoading}
         searchKey="subject"
-        searchPlaceholder="Search by subject..."
+        searchPlaceholder="Search by subject, sender, or email..."
+        onSearch={(value) => {
+          setPage(1);
+          setSearch(value);
+        }}
         page={page}
         totalPages={data?.totalPages}
         onPageChange={setPage}

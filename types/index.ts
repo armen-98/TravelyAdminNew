@@ -165,6 +165,9 @@ export interface PaginatedResponse<T> {
 export interface ContactRequest {
   id: number;
   user?: User;
+  name?: string | null;
+  email?: string | null;
+  source?: "web" | "mobile";
   subject: string;
   message: string;
   cc?: string | null;

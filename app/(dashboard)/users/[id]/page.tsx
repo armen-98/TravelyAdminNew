@@ -202,7 +202,7 @@ export default function UserDetailPage() {
               {user.isPro ? "Set Free" : "Set Pro"}
             </Button>
 
-            {user.isActive ? (
+            {user.deletedAt ? null : user.isActive ? (
               <Button
                 variant="destructive"
                 size="sm"
@@ -243,11 +243,24 @@ export default function UserDetailPage() {
                 <Badge variant={getRoleBadgeVariant(role)} className="capitalize">
                   {role}
                 </Badge>
-                <Badge variant={user.isActive ? "success" : "destructive"}>
-                  {user.isActive ? "Active" : "Inactive"}
+                <Badge variant={user.deletedAt ? "destructive" : user.isActive ? "success" : "destructive"}>
+                  {user.deletedAt ? "Deleted" : user.isActive ? "Active" : "Inactive"}
                 </Badge>
                 {user.isPro && <Badge>Pro</Badge>}
               </div>
+
+              {user.deletedAt && (
+                <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  <p className="font-medium">
+                    {user.deletedBy === "self"
+                      ? "This user deleted their own account."
+                      : "This account has been deleted."}
+                  </p>
+                  <p className="mt-1 text-red-600">
+                    Reason: {user.deletionReason || "User deleted own account"}
+                  </p>
+                </div>
+              )}
 
               <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">

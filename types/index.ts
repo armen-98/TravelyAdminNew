@@ -14,6 +14,9 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   deactivatedAt?: string;
+  deletedAt?: string | null;
+  deletedBy?: "self" | "admin" | null;
+  deletionReason?: string | null;
 }
 
 export interface PlaceModerationHistoryItem {

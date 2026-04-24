@@ -86,9 +86,21 @@ export default function UsersPage() {
       key: "isActive",
       header: "Status",
       cell: (user) => (
-        <Badge variant={user.isActive ? "success" : "destructive"}>
-          {user.isActive ? "Active" : "Inactive"}
-        </Badge>
+        <div className="flex flex-col gap-1">
+          <Badge className='w-fit' variant={user.deletedAt ? "destructive" : user.isActive ? "success" : "destructive"}>
+            {user.deletedAt ? "Deleted" : user.isActive ? "Active" : "Inactive"}
+          </Badge>
+          {user.deletedAt && (
+            <>
+              <span className="text-xs text-muted-foreground">
+                {user.deletedBy === "self" ? "Deleted by own account" : "Deleted account"}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                Reason: {user.deletionReason || "User deleted own account"}
+              </span>
+            </>
+          )}
+        </div>
       ),
     },
     {
@@ -125,7 +137,7 @@ export default function UsersPage() {
             {canManageUsers(sessionRole) && (
               <>
                 <DropdownMenuSeparator />
-                {user.isActive ? (
+                {user.deletedAt ? null : user.isActive ? (
                   <DropdownMenuItem
                     className="text-red-600 focus:text-red-600"
                     onClick={() => setDeactivateTarget(user)}

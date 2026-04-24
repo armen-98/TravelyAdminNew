@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { usePlace, useApprovePlace, useRejectPlace } from "@/hooks/use-places";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -203,7 +204,48 @@ export default function PlaceDetailPage() {
       )}
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+        <Card className="sm:col-span-2">
+          {place.user?.id ? (
+            <Link href={`/users/${place.user.id}`} className="block h-full">
+              <CardContent className="p-4 flex items-center gap-3 h-full hover:bg-muted/40 transition-colors">
+                {place.user.profileImage?.url ? (
+                  <Image
+                    src={place.user.profileImage.url}
+                    alt={place.user.fullName || place.user.email || "User avatar"}
+                    width={44}
+                    height={44}
+                    className="h-11 w-11 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="h-11 w-11 rounded-full bg-muted flex items-center justify-center text-sm font-semibold text-muted-foreground">
+                    {(place.user.fullName || place.user.email || "U").charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Creator</p>
+                  <p className="font-semibold truncate">
+                    {place.user.fullName || `User #${place.user.id}`}
+                  </p>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {place.user.email || "—"}
+                  </p>
+                </div>
+              </CardContent>
+            </Link>
+          ) : (
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="h-11 w-11 rounded-full bg-muted flex items-center justify-center text-sm font-semibold text-muted-foreground">
+                —
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground">Creator</p>
+                <p className="font-semibold">—</p>
+                <p className="text-sm text-muted-foreground">—</p>
+              </div>
+            </CardContent>
+          )}
+        </Card>
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
             <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
@@ -414,12 +456,6 @@ export default function PlaceDetailPage() {
                     <Badge variant="outline">{place.subcategory.name}</Badge>
                   </div>
                 )}
-                <div>
-                  <p className="text-xs text-muted-foreground">Owner</p>
-                  <Badge variant="secondary">
-                    {place.user?.fullName ?? "—"}
-                  </Badge>
-                </div>
               </div>
 
               {place.tags && place.tags.length > 0 && (

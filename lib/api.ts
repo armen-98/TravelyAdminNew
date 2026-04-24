@@ -6,7 +6,7 @@ export type ApiEnvironment = "production" | "staging" | "local";
 const API_ENVIRONMENT_URLS: Record<ApiEnvironment, string> = {
   production: "https://api-prod.travely.life/api",
   staging: "https://api-v2.travely.life/api",
-  local: (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(
+  local: (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5500/api").replace(
     /\/$/,
     ""
   ),

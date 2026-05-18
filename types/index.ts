@@ -33,11 +33,21 @@ export interface Place {
   slug?: string | null;
   description?: string | null;
   address?: string | null;
+  postalCode?: string | null;
   latitude?: number | null;
   longitude?: number | null;
   phone?: string | null;
   email?: string | null;
   website?: string | null;
+  openingHours?: OpeningHours | null;
+  openFullDay?: boolean;
+  social?: SocialLinks | null;
+  priceType?: "range" | "fixed" | "onRequest" | "free" | "discounted" | null;
+  price?: number | null;
+  minPrice?: number | null;
+  maxPrice?: number | null;
+  oldPrice?: number | null;
+  isPriceOnRequest?: boolean;
   isActive: boolean;
   isVerified: boolean | null;
   rejectionReason?: string | null;
@@ -54,6 +64,14 @@ export interface Place {
   state?: Location | null;
   city?: Location | null;
   tags?: Tag[];
+  facilities?: Facility[];
+  restaurant?: Restaurant | null;
+  accommodation?: Accommodation | null;
+  shopping?: Shopping | null;
+  transport?: Transport | null;
+  healthWellness?: HealthWellness | null;
+  natureOutdoors?: NatureOutdoors | null;
+  entertainment?: Entertainment | null;
   createdAt: string;
   updatedAt: string;
   /** Present on `GET /admin/places/:id` — full verification timeline */
@@ -95,6 +113,133 @@ export interface Tag {
   name: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Facility {
+  id: number;
+  name: string;
+  icon?: string | null;
+  description?: string | null;
+  sortOrder: number;
+}
+
+export interface OpeningHourDay {
+  open: string;
+  close: string;
+  isClosed: boolean;
+}
+
+export type OpeningHours = Record<string, OpeningHourDay>;
+
+export interface SocialLinks {
+  facebook?: string | null;
+  instagram?: string | null;
+  twitter?: string | null;
+  linkedin?: string | null;
+}
+
+export interface RestaurantSpecialDish {
+  id: number;
+  title?: string | null;
+  description?: string | null;
+  file?: FileEntity | null;
+}
+
+export interface Restaurant {
+  id: number;
+  cuisineTypes?: string[];
+  diningOptions?: string[];
+  dietaryOptions?: string[];
+  menuImages?: FileEntity[];
+  dishImages?: FileEntity[];
+  specialDishes?: RestaurantSpecialDish[];
+}
+
+export interface RoomType {
+  name: string;
+  description?: string;
+  capacity: number;
+  photos?: number[];
+}
+
+export interface Accommodation {
+  id: number;
+  roomTypes?: RoomType[];
+  bookingUrl?: string | null;
+  checkInTime?: string | null;
+  checkOutTime?: string | null;
+  petsAllowed?: boolean;
+  ageRestriction?: string | null;
+}
+
+export interface Shopping {
+  id: number;
+  productCategories?: string[];
+  brandsCarried?: string[];
+  onlineStoreUrl?: string | null;
+  returnPolicy?: string | null;
+  bookingUrl?: string | null;
+}
+
+export interface RentalOptions {
+  perHour?: number;
+  perDay?: number;
+  perWeek?: number;
+  perMonth?: number;
+}
+
+export interface Transport {
+  id: number;
+  operator?: string | null;
+  transportLines?: string[];
+  destinations?: string[];
+  vehicleTypes?: string[];
+  rentalOptions?: RentalOptions | null;
+  bookingUrl?: string | null;
+}
+
+export interface Practitioner {
+  name: string;
+  specialty?: string;
+  qualifications?: string;
+  yearsOfExperience?: number;
+}
+
+export interface MembershipOptions {
+  monthly?: number;
+  yearly?: number;
+  weekly?: number;
+  dayPass?: number;
+  trialPeriod?: string;
+  features?: string[];
+}
+
+export interface HealthWellness {
+  id: number;
+  servicesOffered?: string[];
+  appointmentBookingUrl?: string | null;
+  insuranceAccepted?: boolean | string[] | { accepted: boolean; providers?: string[] };
+  practitioners?: Practitioner[];
+  membershipOptions?: MembershipOptions | null;
+  bookingUrl?: string | null;
+}
+
+export interface NatureOutdoors {
+  id: number;
+  entryFee?: string | null;
+  keyActivities?: string[];
+  rules?: string[];
+  bestTimeToVisit?: string | null;
+  keyExhibits?: string[];
+}
+
+export interface Entertainment {
+  id: number;
+  eventSchedule?: string | null;
+  ticketPrice?: Record<string, unknown> | null;
+  ticketBookingUrl?: string | null;
+  currentExhibits?: string[];
+  ageRestriction?: string | null;
 }
 
 export interface FileEntity {

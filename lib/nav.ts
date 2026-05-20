@@ -8,6 +8,7 @@ import {
   BookOpen,
   FolderOpen,
   MessageSquare,
+  HandCoins,
   Mail,
   UserCircle,
   Settings,
@@ -57,6 +58,12 @@ export const navItems: NavItem[] = [
     href: "/contact",
     icon: Mail,
     roles: ["super-admin", "admin"],
+  },
+  {
+    title: "Place claims",
+    href: "/claim",
+    icon: HandCoins,
+    roles: ["super-admin", "admin", "moderator"],
   },
   {
     title: "Categories",

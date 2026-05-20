@@ -33,6 +33,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { Settings, Lock, Loader2, Trash2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { ClaimCostSettingsCard } from "@/components/settings/ClaimCostSettingsCard";
 
 // ── Schemas ───────────────────────────────────────────────────────────────────
 
@@ -63,6 +65,9 @@ type PasswordForm = z.infer<typeof passwordSchema>;
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
+  const { data: session } = useSession();
+  const canManageClaimCost =
+    session?.user?.role === "super-admin" || session?.user?.role === "admin";
   const queryClient = useQueryClient();
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [profileSaving, setProfileSaving] = useState(false);
@@ -420,6 +425,8 @@ export default function SettingsPage() {
           </form>
         </CardContent>
       </Card>
+
+      {canManageClaimCost ? <ClaimCostSettingsCard /> : null}
 
       <AlertDialog open={removePhotoOpen} onOpenChange={setRemovePhotoOpen}>
         <AlertDialogContent>

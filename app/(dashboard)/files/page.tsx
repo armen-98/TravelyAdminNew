@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState, useCallback } from "react";
-import { useDropzone } from "react-dropzone";
-import { useFiles, useUploadFile, useDeleteFile } from "@/hooks/use-files";
-import type { FileEntity } from "@/types";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState, useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { useFiles, useUploadFile, useDeleteFile } from '@/hooks/use-files';
+import type { FileEntity } from '@/types';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,14 +15,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   FileImage,
   Upload,
@@ -32,10 +32,10 @@ import {
   Loader2,
   File,
   Image,
-} from "lucide-react";
-import { formatDate, formatFileSize } from "@/lib/utils";
-import NextImage from "next/image";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import { formatDate, formatFileSize } from '@/lib/utils';
+import NextImage from 'next/image';
+import { cn } from '@/lib/utils';
 
 export default function FilesPage() {
   const [deleteTarget, setDeleteTarget] = useState<FileEntity | null>(null);
@@ -56,21 +56,20 @@ export default function FilesPage() {
         setUploading(false);
       }
     },
-    [upload]
+    [upload],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      "image/*": [".png", ".jpg", ".jpeg", ".gif", ".webp"],
-      "video/*": [".mp4", ".mov"],
-      "application/pdf": [".pdf"],
+      'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'],
+      'video/*': ['.mp4', '.mov'],
+      'application/pdf': ['.pdf'],
     },
     multiple: true,
   });
 
-  const isImage = (file: FileEntity) =>
-    file.mimetype?.startsWith("image/");
+  const isImage = (file: FileEntity) => file.mimetype?.startsWith('image/');
 
   return (
     <div className="space-y-6">
@@ -82,7 +81,7 @@ export default function FilesPage() {
           <h1 className="text-2xl font-bold">Files</h1>
           <p className="text-muted-foreground text-sm">
             Upload and manage media files
-            {files ? ` · ${files.length} files` : ""}
+            {files ? ` · ${files.length} files` : ''}
           </p>
         </div>
       </div>
@@ -91,10 +90,10 @@ export default function FilesPage() {
       <div
         {...getRootProps()}
         className={cn(
-          "border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors",
+          'border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors',
           isDragActive
-            ? "border-primary bg-primary/5"
-            : "border-border hover:border-primary/50 hover:bg-muted/30"
+            ? 'border-primary bg-primary/5'
+            : 'border-border hover:border-primary/50 hover:bg-muted/30',
         )}
       >
         <input {...getInputProps()} />
@@ -107,10 +106,10 @@ export default function FilesPage() {
           <div>
             <p className="font-medium">
               {isDragActive
-                ? "Drop files here..."
+                ? 'Drop files here...'
                 : uploading
-                ? "Uploading..."
-                : "Drag & drop files here"}
+                  ? 'Uploading...'
+                  : 'Drag & drop files here'}
             </p>
             <p className="text-sm text-muted-foreground mt-1">
               or click to browse · Images, Videos, PDFs
@@ -123,32 +122,21 @@ export default function FilesPage() {
       {isLoading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {Array.from({ length: 10 }).map((_, i) => (
-            <div
-              key={i}
-              className="aspect-square bg-muted animate-pulse rounded-lg"
-            />
+            <div key={i} className="aspect-square bg-muted animate-pulse rounded-lg" />
           ))}
         </div>
       ) : files && files.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {files.map((file) => (
-            <Card
-              key={file.id}
-              className="group overflow-hidden hover:shadow-md transition-shadow"
-            >
+            <Card key={file.id} className="group overflow-hidden hover:shadow-md transition-shadow">
               <div className="relative aspect-square bg-muted">
                 {isImage(file) ? (
-                  <NextImage
-                    src={file.url}
-                    alt={file.filename}
-                    fill
-                    className="object-cover"
-                  />
+                  <NextImage src={file.url} alt={file.filename} fill className="object-cover" />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-2">
                     <File className="h-10 w-10" />
                     <Badge variant="outline" className="text-xs">
-                      {file.mimetype?.split("/")[1]?.toUpperCase() ?? "FILE"}
+                      {file.mimetype?.split('/')[1]?.toUpperCase() ?? 'FILE'}
                     </Badge>
                   </div>
                 )}
@@ -157,18 +145,12 @@ export default function FilesPage() {
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        className="h-8 w-8"
-                      >
+                      <Button variant="secondary" size="icon" className="h-8 w-8">
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => window.open(file.url, "_blank")}
-                      >
+                      <DropdownMenuItem onClick={() => window.open(file.url, '_blank')}>
                         <ExternalLink className="mr-2 h-4 w-4" />
                         Open
                       </DropdownMenuItem>
@@ -186,9 +168,7 @@ export default function FilesPage() {
 
               <CardContent className="p-2">
                 <p className="text-xs font-medium truncate">{file.filename}</p>
-                <p className="text-xs text-muted-foreground">
-                  {formatFileSize(file.size)}
-                </p>
+                <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
               </CardContent>
             </Card>
           ))}
@@ -203,16 +183,13 @@ export default function FilesPage() {
       )}
 
       {/* Delete confirm */}
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={() => setDeleteTarget(null)}
-      >
+      <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete File</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &quot;{deleteTarget?.filename}&quot;? This
-              cannot be undone.
+              Are you sure you want to delete &quot;{deleteTarget?.filename}&quot;? This cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

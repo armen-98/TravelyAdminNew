@@ -221,7 +221,6 @@ export default function PlacesPage() {
           </DropdownMenu>
         ),
       },
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     ],
     [sessionRole, router, approve, reject],
   );

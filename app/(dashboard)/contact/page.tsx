@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { DataTable, Column } from "@/components/tables/data-table";
-import { useContactRequests } from "@/hooks/use-contact-requests";
-import { useResolveContactRequest } from "@/hooks/use-contact-requests";
-import type { ContactRequest } from "@/types";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { useState } from 'react';
+import Link from 'next/link';
+import { DataTable, Column } from '@/components/tables/data-table';
+import { useContactRequests } from '@/hooks/use-contact-requests';
+import { useResolveContactRequest } from '@/hooks/use-contact-requests';
+import type { ContactRequest } from '@/types';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { formatDate } from "@/lib/utils";
-import { ExternalLink, Mail } from "lucide-react";
+} from '@/components/ui/dialog';
+import { formatDate } from '@/lib/utils';
+import { ExternalLink, Mail } from 'lucide-react';
 
 export default function ContactPage() {
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const { data, isLoading } = useContactRequests({ page, search: search || undefined });
   const router = useRouter();
   const resolveMutation = useResolveContactRequest();
@@ -34,9 +34,9 @@ export default function ContactPage() {
 
   const columns: Column<ContactRequest>[] = [
     {
-      key: "user",
-      header: "Sender",
-      cell: (req) => (
+      key: 'user',
+      header: 'Sender',
+      cell: (req) =>
         req.user?.id ? (
           <Link
             href={`/users/${req.user.id}`}
@@ -47,19 +47,16 @@ export default function ContactPage() {
           </Link>
         ) : (
           <div className="min-w-0">
-            <p className="text-sm font-medium truncate">
-              {req.name ?? req.email ?? "Guest"}
-            </p>
+            <p className="text-sm font-medium truncate">{req.name ?? req.email ?? 'Guest'}</p>
             {req.email ? (
               <p className="text-xs text-muted-foreground truncate">{req.email}</p>
             ) : null}
           </div>
-        )
-      ),
+        ),
     },
     {
-      key: "subject",
-      header: "Subject",
+      key: 'subject',
+      header: 'Subject',
       cell: (req) => (
         <p className="text-sm font-medium truncate" title={req.subject}>
           {req.subject}
@@ -67,27 +64,23 @@ export default function ContactPage() {
       ),
     },
     {
-      key: "source",
-      header: "Source",
+      key: 'source',
+      header: 'Source',
       cell: (req) => (
         <Badge variant="outline" className="uppercase">
-          {req.source ?? "mobile"}
+          {req.source ?? 'mobile'}
         </Badge>
       ),
     },
     {
-      key: "hasUser",
-      header: "Has User",
+      key: 'hasUser',
+      header: 'Has User',
       cell: (req) =>
-        req.user?.id ? (
-          <Badge variant="success">Yes</Badge>
-        ) : (
-          <Badge variant="secondary">No</Badge>
-        ),
+        req.user?.id ? <Badge variant="success">Yes</Badge> : <Badge variant="secondary">No</Badge>,
     },
     {
-      key: "message",
-      header: "Message",
+      key: 'message',
+      header: 'Message',
       cell: (req) => (
         <p className="text-sm text-muted-foreground max-w-xs truncate" title={req.message}>
           {req.message}
@@ -95,8 +88,8 @@ export default function ContactPage() {
       ),
     },
     {
-      key: "cc",
-      header: "CC",
+      key: 'cc',
+      header: 'CC',
       cell: (req) =>
         req.cc ? (
           <span className="text-sm text-muted-foreground">{req.cc}</span>
@@ -105,27 +98,23 @@ export default function ContactPage() {
         ),
     },
     {
-      key: "createdAt",
-      header: "Date",
+      key: 'createdAt',
+      header: 'Date',
       cell: (req) => (
-        <span className="text-sm text-muted-foreground">
-          {formatDate(req.createdAt)}
-        </span>
+        <span className="text-sm text-muted-foreground">{formatDate(req.createdAt)}</span>
       ),
     },
     {
-      key: "attachmentFile",
-      header: "Attachment",
+      key: 'attachmentFile',
+      header: 'Attachment',
       cell: (req) => {
         const url = req.attachmentFile?.url;
         if (!url) return <Badge variant="outline">No file</Badge>;
 
         const mimeType =
-          (req.attachmentFile as any)?.mimetype ??
-          (req.attachmentFile as any)?.mimeType ??
-          "";
+          (req.attachmentFile as any)?.mimetype ?? (req.attachmentFile as any)?.mimeType ?? '';
 
-        if (mimeType.startsWith("image/")) {
+        if (mimeType.startsWith('image/')) {
           return (
             <Button
               variant="ghost"
@@ -153,7 +142,7 @@ export default function ContactPage() {
             className="gap-2"
             onClick={(e) => {
               e.stopPropagation();
-              window.open(url, "_blank");
+              window.open(url, '_blank');
             }}
           >
             <ExternalLink className="h-4 w-4" />
@@ -163,8 +152,8 @@ export default function ContactPage() {
       },
     },
     {
-      key: "actions",
-      header: "",
+      key: 'actions',
+      header: '',
       cell: (req) => {
         if (req.isResolved) return <Badge variant="success">Resolved</Badge>;
         return (
@@ -195,7 +184,7 @@ export default function ContactPage() {
           <h1 className="text-2xl font-bold">Contact Us</h1>
           <p className="text-muted-foreground text-sm">
             View all contact messages
-            {data?.total ? ` · ${data.total} total` : ""}
+            {data?.total ? ` · ${data.total} total` : ''}
           </p>
         </div>
       </div>
@@ -225,16 +214,14 @@ export default function ContactPage() {
         <DialogContent className="sm:max-w-5xl">
           <DialogHeader>
             <DialogTitle>Attachment</DialogTitle>
-            <DialogDescription>
-              {attachmentPreview?.filename ?? "No filename"}
-            </DialogDescription>
+            <DialogDescription>{attachmentPreview?.filename ?? 'No filename'}</DialogDescription>
           </DialogHeader>
 
-          {attachmentPreview?.mimetype?.startsWith("image/") ? (
+          {attachmentPreview?.mimetype?.startsWith('image/') ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={attachmentPreview.url}
-              alt={attachmentPreview.filename ?? "attachment"}
+              alt={attachmentPreview.filename ?? 'attachment'}
               className="w-full max-h-[80vh] object-contain rounded-lg border bg-muted"
             />
           ) : null}
@@ -243,4 +230,3 @@ export default function ContactPage() {
     </div>
   );
 }
-

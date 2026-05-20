@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   AreaChart,
@@ -12,12 +12,12 @@ import {
   Bar,
   Cell,
   Legend,
-} from "recharts";
+} from 'recharts';
 
 const STATUS_COLORS: Record<string, string> = {
-  Approved: "#10b981",
-  Pending: "#f59e0b",
-  Rejected: "#ef4444",
+  Approved: '#10b981',
+  Pending: '#f59e0b',
+  Rejected: '#ef4444',
 };
 
 interface GrowthChartProps {
@@ -85,10 +85,7 @@ export function PlaceStatusChart({ data }: PlaceStatusChartProps) {
         <Tooltip />
         <Bar dataKey="value" name="Places" radius={[6, 6, 0, 0]}>
           {data.map((entry) => (
-            <Cell
-              key={entry.name}
-              fill={STATUS_COLORS[entry.name] ?? "#6366f1"}
-            />
+            <Cell key={entry.name} fill={STATUS_COLORS[entry.name] ?? '#6366f1'} />
           ))}
         </Bar>
       </BarChart>

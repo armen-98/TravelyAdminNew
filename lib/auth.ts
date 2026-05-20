@@ -1,5 +1,5 @@
-import NextAuth from "next-auth";
-import Credentials from "next-auth/providers/credentials";
+import NextAuth from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
 
 // Shape returned by POST /api/auth/sign-in
 export interface ApiSignInResponse {
@@ -30,7 +30,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!credentials?.accessToken || !credentials?.id) return null;
 
         const role = credentials.role as string;
-        if (!["super-admin", "admin", "moderator"].includes(role)) return null;
+        if (!['super-admin', 'admin', 'moderator'].includes(role)) return null;
 
         return {
           id: credentials.id as string,
@@ -59,15 +59,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
   pages: {
-    signIn: "/login",
+    signIn: '/login',
   },
   session: {
-    strategy: "jwt",
+    strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60,
   },
 });
 
-declare module "next-auth" {
+declare module 'next-auth' {
   interface Session {
     accessToken: string;
     user: {

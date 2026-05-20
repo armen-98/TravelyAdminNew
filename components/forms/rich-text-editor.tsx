@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Link from "@tiptap/extension-link";
-import Placeholder from "@tiptap/extension-placeholder";
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Link from '@tiptap/extension-link';
+import Placeholder from '@tiptap/extension-placeholder';
 import {
   Bold,
   Italic,
@@ -14,9 +14,9 @@ import {
   Undo,
   Redo,
   Link as LinkIcon,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface RichTextEditorProps {
   content: string;
@@ -27,7 +27,7 @@ interface RichTextEditorProps {
 export default function RichTextEditor({
   content,
   onChange,
-  placeholder = "Write your content here...",
+  placeholder = 'Write your content here...',
 }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
@@ -47,38 +47,38 @@ export default function RichTextEditor({
     {
       action: () => editor.chain().focus().toggleBold().run(),
       icon: Bold,
-      isActive: editor.isActive("bold"),
-      title: "Bold",
+      isActive: editor.isActive('bold'),
+      title: 'Bold',
     },
     {
       action: () => editor.chain().focus().toggleItalic().run(),
       icon: Italic,
-      isActive: editor.isActive("italic"),
-      title: "Italic",
+      isActive: editor.isActive('italic'),
+      title: 'Italic',
     },
     {
       action: () => editor.chain().focus().toggleStrike().run(),
       icon: Strikethrough,
-      isActive: editor.isActive("strike"),
-      title: "Strikethrough",
+      isActive: editor.isActive('strike'),
+      title: 'Strikethrough',
     },
     {
       action: () => editor.chain().focus().toggleBulletList().run(),
       icon: List,
-      isActive: editor.isActive("bulletList"),
-      title: "Bullet List",
+      isActive: editor.isActive('bulletList'),
+      title: 'Bullet List',
     },
     {
       action: () => editor.chain().focus().toggleOrderedList().run(),
       icon: ListOrdered,
-      isActive: editor.isActive("orderedList"),
-      title: "Ordered List",
+      isActive: editor.isActive('orderedList'),
+      title: 'Ordered List',
     },
     {
       action: () => editor.chain().focus().toggleBlockquote().run(),
       icon: Quote,
-      isActive: editor.isActive("blockquote"),
-      title: "Blockquote",
+      isActive: editor.isActive('blockquote'),
+      title: 'Blockquote',
     },
   ];
 
@@ -92,7 +92,7 @@ export default function RichTextEditor({
             type="button"
             variant="ghost"
             size="icon"
-            className={cn("h-8 w-8", isActive && "bg-accent")}
+            className={cn('h-8 w-8', isActive && 'bg-accent')}
             onClick={action}
             title={title}
           >

@@ -1,26 +1,25 @@
-"use client";
+'use client';
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
-import type { PlaceReview, PaginatedResponse } from "@/types";
-import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '@/lib/api';
+import type { PlaceReview, PaginatedResponse } from '@/types';
+import { toast } from 'sonner';
 
 interface ReviewsParams {
   page?: number;
   limit?: number;
   search?: string;
   placeId?: number;
-  reviewStatus?: "pending" | "approved" | "rejected";
+  reviewStatus?: 'pending' | 'approved' | 'rejected';
 }
 
 export function useReviews(params: ReviewsParams = {}) {
   return useQuery({
-    queryKey: ["reviews", params],
+    queryKey: ['reviews', params],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<PlaceReview>>(
-        "/admin/reviews",
-        { params: { page: 1, limit: 20, ...params } }
-      );
+      const { data } = await api.get<PaginatedResponse<PlaceReview>>('/admin/reviews', {
+        params: { page: 1, limit: 20, ...params },
+      });
       return data;
     },
   });
@@ -34,10 +33,10 @@ export function useApproveReview() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reviews"] });
-      toast.success("Review approved");
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+      toast.success('Review approved');
     },
-    onError: () => toast.error("Failed to approve review"),
+    onError: () => toast.error('Failed to approve review'),
   });
 }
 
@@ -49,10 +48,10 @@ export function useRejectReview() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reviews"] });
-      toast.success("Review rejected");
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+      toast.success('Review rejected');
     },
-    onError: () => toast.error("Failed to reject review"),
+    onError: () => toast.error('Failed to reject review'),
   });
 }
 
@@ -64,9 +63,9 @@ export function useDeleteReview() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reviews"] });
-      toast.success("Review deleted");
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+      toast.success('Review deleted');
     },
-    onError: () => toast.error("Failed to delete review"),
+    onError: () => toast.error('Failed to delete review'),
   });
 }

@@ -1,22 +1,18 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import {
-  useApproveClaim,
-  useClaim,
-  useRejectClaim,
-} from "@/hooks/use-claims";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
-import { formatDate } from "@/lib/utils";
-import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { useState } from 'react';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useApproveClaim, useClaim, useRejectClaim } from '@/hooks/use-claims';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
+import { formatDate } from '@/lib/utils';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 export default function ClaimDetailPage() {
   const params = useParams();
@@ -25,8 +21,8 @@ export default function ClaimDetailPage() {
   const { data: claim, isLoading } = useClaim(Number.isFinite(id) ? id : null);
   const approveMutation = useApproveClaim();
   const rejectMutation = useRejectClaim();
-  const [adminNotes, setAdminNotes] = useState("");
-  const [rejectionReason, setRejectionReason] = useState("");
+  const [adminNotes, setAdminNotes] = useState('');
+  const [rejectionReason, setRejectionReason] = useState('');
 
   if (isLoading || !claim) {
     return (
@@ -37,16 +33,16 @@ export default function ClaimDetailPage() {
     );
   }
 
-  const isPending = claim.status === "pending";
+  const isPending = claim.status === 'pending';
 
   const onApprove = async () => {
     try {
       await approveMutation.mutateAsync({ id: claim.id, adminNotes });
-      toast.success("Claim approved and place assigned to claimant");
-      router.push("/claim");
+      toast.success('Claim approved and place assigned to claimant');
+      router.push('/claim');
     } catch (e: unknown) {
       const err = e as { response?: { data?: { message?: string } } };
-      toast.error(err?.response?.data?.message ?? "Failed to approve claim");
+      toast.error(err?.response?.data?.message ?? 'Failed to approve claim');
     }
   };
 
@@ -57,11 +53,11 @@ export default function ClaimDetailPage() {
         rejectionReason,
         adminNotes,
       });
-      toast.success("Claim rejected");
-      router.push("/claim");
+      toast.success('Claim rejected');
+      router.push('/claim');
     } catch (e: unknown) {
       const err = e as { response?: { data?: { message?: string } } };
-      toast.error(err?.response?.data?.message ?? "Failed to reject claim");
+      toast.error(err?.response?.data?.message ?? 'Failed to reject claim');
     }
   };
 
@@ -82,7 +78,7 @@ export default function ClaimDetailPage() {
         <CardContent className="space-y-1 text-sm">
           <p>
             <span className="text-muted-foreground">Name: </span>
-            {claim.place?.name ?? "—"}
+            {claim.place?.name ?? '—'}
           </p>
           <p>
             <span className="text-muted-foreground">Place ID: </span>
@@ -103,9 +99,7 @@ export default function ClaimDetailPage() {
           {claim.phone ? <p>{claim.phone}</p> : null}
           {claim.businessName ? <p>Business: {claim.businessName}</p> : null}
           {claim.relationship ? <p>Relationship: {claim.relationship}</p> : null}
-          {claim.message ? (
-            <p className="mt-2 whitespace-pre-wrap">{claim.message}</p>
-          ) : null}
+          {claim.message ? <p className="mt-2 whitespace-pre-wrap">{claim.message}</p> : null}
           <p className="text-muted-foreground text-xs mt-2">
             Submitted {formatDate(claim.createdAt)}
           </p>
@@ -119,7 +113,7 @@ export default function ClaimDetailPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              File IDs: {claim.documentFileIds.join(", ")} — view in Files module.
+              File IDs: {claim.documentFileIds.join(', ')} — view in Files module.
             </p>
           </CardContent>
         </Card>
@@ -175,9 +169,7 @@ export default function ClaimDetailPage() {
       ) : (
         <Card>
           <CardContent className="pt-6 text-sm text-muted-foreground">
-            {claim.rejectionReason ? (
-              <p>Rejection: {claim.rejectionReason}</p>
-            ) : null}
+            {claim.rejectionReason ? <p>Rejection: {claim.rejectionReason}</p> : null}
             {claim.adminNotes ? <p className="mt-2">Notes: {claim.adminNotes}</p> : null}
             {claim.reviewedAt ? (
               <p className="mt-2">Reviewed {formatDate(claim.reviewedAt)}</p>

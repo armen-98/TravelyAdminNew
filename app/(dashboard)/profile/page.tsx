@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useSession } from "next-auth/react";
-import { useQuery } from "@tanstack/react-query";
-import { User as UserIcon, ExternalLink, Pencil } from "lucide-react";
-import api from "@/lib/api";
-import type { User } from "@/types";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import { useQuery } from '@tanstack/react-query';
+import { User as UserIcon, ExternalLink, Pencil } from 'lucide-react';
+import api from '@/lib/api';
+import type { User } from '@/types';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function initialsFromName(fullName: string | null | undefined) {
-  if (!fullName?.trim()) return "?";
+  if (!fullName?.trim()) return '?';
   return fullName
     .trim()
     .split(/\s+/)
     .map((n) => n[0])
-    .join("")
+    .join('')
     .toUpperCase()
     .slice(0, 2);
 }
@@ -26,17 +26,15 @@ export default function ProfilePage() {
   const { data: session } = useSession();
 
   const { data: me, isLoading } = useQuery({
-    queryKey: ["me"],
+    queryKey: ['me'],
     queryFn: async () => {
-      const { data } = await api.get<{ data: User }>("/users/me");
+      const { data } = await api.get<{ data: User }>('/users/me');
       return data.data ?? data;
     },
   });
 
   const roleLabel =
-    (me as { role?: { name?: string } } | null)?.role?.name ??
-    session?.user?.role ??
-    "";
+    (me as { role?: { name?: string } } | null)?.role?.name ?? session?.user?.role ?? '';
 
   if (isLoading) {
     return (
@@ -55,9 +53,7 @@ export default function ProfilePage() {
         </div>
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold">Profile</h1>
-          <p className="text-muted-foreground text-sm">
-            Your account details
-          </p>
+          <p className="text-muted-foreground text-sm">Your account details</p>
         </div>
         <Button asChild>
           <Link href="/settings">
@@ -78,9 +74,7 @@ export default function ProfilePage() {
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0 pt-2 sm:pt-0 sm:pb-1">
-            <h2 className="text-xl font-semibold truncate">
-              {me?.fullName ?? "—"}
-            </h2>
+            <h2 className="text-xl font-semibold truncate">{me?.fullName ?? '—'}</h2>
             <p className="text-sm text-muted-foreground truncate">
               {me?.email ?? session?.user?.email}
             </p>
@@ -102,24 +96,20 @@ export default function ProfilePage() {
           <DetailRow label="Full name" value={me?.fullName} />
           <DetailRow label="Email" value={me?.email} />
           <DetailRow label="Phone" value={me?.phone} />
-          <DetailRow
-            label="Website"
-            value={me?.website}
-            isLink
-          />
+          <DetailRow label="Website" value={me?.website} isLink />
           <div className="py-4 first:pt-0">
             <p className="text-sm font-medium text-muted-foreground mb-1">Bio</p>
             <p className="text-sm whitespace-pre-wrap">
-              {me?.description?.trim() ? me.description : "—"}
+              {me?.description?.trim() ? me.description : '—'}
             </p>
           </div>
           {me?.createdAt ? (
             <DetailRow
               label="Member since"
               value={new Date(me.createdAt).toLocaleDateString(undefined, {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
               })}
             />
           ) : null}
@@ -138,15 +128,13 @@ function DetailRow({
   value?: string | null;
   isLink?: boolean;
 }) {
-  const display = value?.trim() ? value : "—";
+  const display = value?.trim() ? value : '—';
   return (
     <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 py-4 first:pt-0">
-      <p className="text-sm font-medium text-muted-foreground sm:w-36 shrink-0">
-        {label}
-      </p>
+      <p className="text-sm font-medium text-muted-foreground sm:w-36 shrink-0">{label}</p>
       {isLink && value?.trim() ? (
         <a
-          href={value.startsWith("http") ? value : `https://${value}`}
+          href={value.startsWith('http') ? value : `https://${value}`}
           target="_blank"
           rel="noopener noreferrer"
           className="text-sm text-blue-600 hover:underline inline-flex items-center gap-1 break-all"

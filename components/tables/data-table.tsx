@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Table,
   TableBody,
@@ -8,10 +8,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 
 export interface Column<T> {
   key: string;
@@ -20,7 +20,6 @@ export interface Column<T> {
   sortable?: boolean;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface DataTableProps<T = any> {
   columns: Column<T>[];
   data: T[];
@@ -38,12 +37,11 @@ interface DataTableProps<T = any> {
   onRowClick?: (row: T) => void;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function DataTable<T = any>({
   columns,
   data,
   searchKey,
-  searchPlaceholder = "Search...",
+  searchPlaceholder = 'Search...',
   onSearch,
   filters,
   isLoading,
@@ -53,7 +51,7 @@ export function DataTable<T = any>({
   toolbar,
   onRowClick,
 }: DataTableProps<T>) {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const onSearchRef = useRef(onSearch);
   onSearchRef.current = onSearch;
 
@@ -70,9 +68,10 @@ export function DataTable<T = any>({
     // When onSearch is provided, filtering is handled server-side
     if (onSearch || !searchKey || !search) return data;
     return data.filter((row) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const value = (row as any)[searchKey];
-      return String(value ?? "").toLowerCase().includes(search.toLowerCase());
+      return String(value ?? '')
+        .toLowerCase()
+        .includes(search.toLowerCase());
     });
   }, [data, search, searchKey, onSearch]);
 
@@ -121,9 +120,8 @@ export function DataTable<T = any>({
             ) : filtered.length ? (
               filtered.map((row, i) => (
                 <TableRow
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   key={(row as any).id ?? i}
-                  className={onRowClick ? "cursor-pointer" : undefined}
+                  className={onRowClick ? 'cursor-pointer' : undefined}
                   onClick={() => onRowClick?.(row)}
                 >
                   {columns.map((col) => (

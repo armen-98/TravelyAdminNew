@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import dynamic from "next/dynamic";
-import { useQuery } from "@tanstack/react-query";
-import api from "@/lib/api";
-import type { DashboardStats } from "@/types";
-import { StatsCard } from "@/components/dashboard/stats-card";
+import dynamic from 'next/dynamic';
+import { useQuery } from '@tanstack/react-query';
+import api from '@/lib/api';
+import type { DashboardStats } from '@/types';
+import { StatsCard } from '@/components/dashboard/stats-card';
 import {
   Users,
   MapPin,
@@ -14,24 +14,18 @@ import {
   CheckCircle,
   Star,
   AlertCircle,
-} from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const GrowthChart = dynamic(
-  () => import("@/components/dashboard/charts").then((m) => m.GrowthChart),
-  { ssr: false, loading: () => <Skeleton className="h-60 w-full rounded" /> }
+  () => import('@/components/dashboard/charts').then((m) => m.GrowthChart),
+  { ssr: false, loading: () => <Skeleton className="h-60 w-full rounded" /> },
 );
 
 const PlaceStatusChart = dynamic(
-  () => import("@/components/dashboard/charts").then((m) => m.PlaceStatusChart),
-  { ssr: false, loading: () => <Skeleton className="h-60 w-full rounded" /> }
+  () => import('@/components/dashboard/charts').then((m) => m.PlaceStatusChart),
+  { ssr: false, loading: () => <Skeleton className="h-60 w-full rounded" /> },
 );
 
 function DashboardSkeleton() {
@@ -51,10 +45,14 @@ function DashboardSkeleton() {
 }
 
 export default function DashboardPage() {
-  const { data: stats, isLoading, error } = useQuery<DashboardStats>({
-    queryKey: ["admin-stats"],
+  const {
+    data: stats,
+    isLoading,
+    error,
+  } = useQuery<DashboardStats>({
+    queryKey: ['admin-stats'],
     queryFn: async () => {
-      const { data } = await api.get<DashboardStats>("/admin/stats");
+      const { data } = await api.get<DashboardStats>('/admin/stats');
       return data;
     },
     staleTime: 60_000,
@@ -162,7 +160,8 @@ export default function DashboardPage() {
               Place Status
             </CardTitle>
             <CardDescription>
-              Approved {stats.verifiedPlaces} · Pending {stats.pendingPlaces} · Rejected {stats.rejectedPlaces}
+              Approved {stats.verifiedPlaces} · Pending {stats.pendingPlaces} · Rejected{' '}
+              {stats.rejectedPlaces}
             </CardDescription>
           </CardHeader>
           <CardContent>

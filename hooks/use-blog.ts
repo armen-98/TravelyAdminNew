@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
-import type { Blog, PaginatedResponse } from "@/types";
-import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '@/lib/api';
+import type { Blog, PaginatedResponse } from '@/types';
+import { toast } from 'sonner';
 
 export function useBlogs(params: { page?: number; limit?: number; search?: string } = {}) {
   return useQuery({
-    queryKey: ["blog", params],
+    queryKey: ['blog', params],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<Blog>>("/admin/blogs", {
+      const { data } = await api.get<PaginatedResponse<Blog>>('/admin/blogs', {
         params: { page: 1, limit: 20, ...params },
       });
       return data;
@@ -19,7 +19,7 @@ export function useBlogs(params: { page?: number; limit?: number; search?: strin
 
 export function useBlog(id: number) {
   return useQuery({
-    queryKey: ["blog", id],
+    queryKey: ['blog', id],
     queryFn: async () => {
       const { data } = await api.get<{ data: Blog }>(`/admin/blogs/${id}`);
       return data.data ?? data;
@@ -33,14 +33,14 @@ export function useCreateBlog() {
   return useMutation({
     mutationFn: async (payload: Partial<Blog>) => {
       // Creation still goes through the regular blog endpoint (handles file attachments)
-      const { data } = await api.post("/blog", payload);
+      const { data } = await api.post('/blog', payload);
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["blog"] });
-      toast.success("Blog post created");
+      queryClient.invalidateQueries({ queryKey: ['blog'] });
+      toast.success('Blog post created');
     },
-    onError: () => toast.error("Failed to create blog post"),
+    onError: () => toast.error('Failed to create blog post'),
   });
 }
 
@@ -62,16 +62,15 @@ export function useUpdateBlog() {
       if (rest.description !== undefined) body.description = rest.description;
       if (rest.categoryId !== undefined) body.categoryId = rest.categoryId;
       if (rest.isActive !== undefined) body.isActive = rest.isActive;
-      if (rest.image !== undefined && rest.image !== null)
-        body.image = rest.image;
+      if (rest.image !== undefined && rest.image !== null) body.image = rest.image;
       const { data } = await api.patch(`/admin/blogs/${id}`, body);
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["blog"] });
-      toast.success("Blog post updated");
+      queryClient.invalidateQueries({ queryKey: ['blog'] });
+      toast.success('Blog post updated');
     },
-    onError: () => toast.error("Failed to update blog post"),
+    onError: () => toast.error('Failed to update blog post'),
   });
 }
 
@@ -83,9 +82,9 @@ export function useDeleteBlog() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["blog"] });
-      toast.success("Blog post deleted");
+      queryClient.invalidateQueries({ queryKey: ['blog'] });
+      toast.success('Blog post deleted');
     },
-    onError: () => toast.error("Failed to delete blog post"),
+    onError: () => toast.error('Failed to delete blog post'),
   });
 }

@@ -1,29 +1,26 @@
-"use client";
+'use client';
 
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef } from 'react';
 import {
   useAdminLocationTree,
   useCreateAdminLocation,
   useUpdateAdminLocation,
   useDeleteAdminLocation,
-} from "@/hooks/use-admin-locations";
-import { useUploadFile } from "@/hooks/use-files";
-import type { AdminLocationNode } from "@/types";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+} from '@/hooks/use-admin-locations';
+import { useUploadFile } from '@/hooks/use-files';
+import type { AdminLocationNode } from '@/types';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/sheet';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -31,14 +28,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,19 +45,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  ChevronRight,
-  Globe2,
-  Loader2,
-  MapPin,
-  Pencil,
-  Plus,
-  Trash2,
-  Upload,
-} from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
+} from '@/components/ui/alert-dialog';
+import { ChevronRight, Globe2, Loader2, MapPin, Pencil, Plus, Trash2, Upload } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 
 function statesWithCountryLabels(tree: AdminLocationNode[]) {
   const out: { id: number; label: string }[] = [];
@@ -73,13 +61,13 @@ function statesWithCountryLabels(tree: AdminLocationNode[]) {
 }
 
 type DialogState =
-  | { mode: "closed" }
+  | { mode: 'closed' }
   | {
-      mode: "create";
-      type: "country" | "state" | "city";
+      mode: 'create';
+      type: 'country' | 'state' | 'city';
       parentId?: number;
     }
-  | { mode: "edit"; node: AdminLocationNode };
+  | { mode: 'edit'; node: AdminLocationNode };
 
 type UploadResponse = { data: { id: number; url?: string } };
 
@@ -114,10 +102,10 @@ function LocationCoverImageFields({
           tabIndex={-1}
           onChange={async (e) => {
             const file = e.target.files?.[0];
-            e.target.value = "";
+            e.target.value = '';
             if (!file) return;
-            if (!file.type.startsWith("image/")) {
-              toast.error("Please choose an image file.");
+            if (!file.type.startsWith('image/')) {
+              toast.error('Please choose an image file.');
               return;
             }
             await onUploadFile(file);
@@ -162,25 +150,18 @@ function LocationCoverImageFields({
 }
 
 function countCitiesInCountry(country: AdminLocationNode): number {
-  return (country.children ?? []).reduce(
-    (acc, s) => acc + (s.children?.length ?? 0),
-    0
-  );
+  return (country.children ?? []).reduce((acc, s) => acc + (s.children?.length ?? 0), 0);
 }
 
 export default function LocationsPage() {
-  const [dialog, setDialog] = useState<DialogState>({ mode: "closed" });
-  const [selectedCountryId, setSelectedCountryId] = useState<number | null>(
-    null
-  );
-  const [formName, setFormName] = useState("");
-  const [formCountryCode, setFormCountryCode] = useState("");
-  const [formImageId, setFormImageId] = useState("");
+  const [dialog, setDialog] = useState<DialogState>({ mode: 'closed' });
+  const [selectedCountryId, setSelectedCountryId] = useState<number | null>(null);
+  const [formName, setFormName] = useState('');
+  const [formCountryCode, setFormCountryCode] = useState('');
+  const [formImageId, setFormImageId] = useState('');
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
-  const [formParentId, setFormParentId] = useState<string>("");
-  const [deleteTarget, setDeleteTarget] = useState<AdminLocationNode | null>(
-    null
-  );
+  const [formParentId, setFormParentId] = useState<string>('');
+  const [deleteTarget, setDeleteTarget] = useState<AdminLocationNode | null>(null);
 
   const { data: tree, isLoading } = useAdminLocationTree();
   const create = useCreateAdminLocation();
@@ -202,46 +183,41 @@ export default function LocationsPage() {
   }, [tree, selectedCountryId]);
 
   useEffect(() => {
-    if (dialog.mode === "closed") return;
-    if (dialog.mode === "create") {
-      setFormName("");
-      setFormCountryCode("");
-      setFormImageId("");
-      setFormParentId("");
+    if (dialog.mode === 'closed') return;
+    if (dialog.mode === 'create') {
+      setFormName('');
+      setFormCountryCode('');
+      setFormImageId('');
+      setFormParentId('');
       setImagePreviewUrl(null);
       return;
     }
     const n = dialog.node;
     setFormName(n.name);
-    setFormCountryCode(
-      n.type === "country" && n.countryCode ? String(n.countryCode) : ""
-    );
-    const hasImageId =
-      (n.type === "country" || n.type === "city") && n.imageId != null;
-    setFormImageId(hasImageId ? String(n.imageId!) : "");
+    setFormCountryCode(n.type === 'country' && n.countryCode ? String(n.countryCode) : '');
+    const hasImageId = (n.type === 'country' || n.type === 'city') && n.imageId != null;
+    setFormImageId(hasImageId ? String(n.imageId!) : '');
     setImagePreviewUrl(
-      (n.type === "country" || n.type === "city") && n.image?.url
-        ? n.image.url
-        : null
+      (n.type === 'country' || n.type === 'city') && n.image?.url ? n.image.url : null,
     );
-    if (n.type === "state") {
-      setFormParentId(n.parentId != null ? String(n.parentId) : "");
-    } else if (n.type === "city") {
-      setFormParentId(n.parentId != null ? String(n.parentId) : "");
+    if (n.type === 'state') {
+      setFormParentId(n.parentId != null ? String(n.parentId) : '');
+    } else if (n.type === 'city') {
+      setFormParentId(n.parentId != null ? String(n.parentId) : '');
     } else {
-      setFormParentId("");
+      setFormParentId('');
     }
   }, [dialog]);
 
   const closeDialog = () => {
-    setDialog({ mode: "closed" });
+    setDialog({ mode: 'closed' });
     setImagePreviewUrl(null);
   };
 
   const handleLocationImageUpload = async (file: File) => {
     const res = (await uploadFile.mutateAsync({
       file,
-      folder: "locations",
+      folder: 'locations',
     })) as UploadResponse;
     const row = res?.data;
     if (row?.id != null) {
@@ -256,42 +232,41 @@ export default function LocationsPage() {
 
     const codeRaw = formCountryCode.trim().toUpperCase();
     if (codeRaw.length === 1) {
-      toast.error("Country code must be 2 letters (e.g. AM) or empty.");
+      toast.error('Country code must be 2 letters (e.g. AM) or empty.');
       return;
     }
 
-    if (dialog.mode === "create") {
-      if (dialog.type === "country") {
+    if (dialog.mode === 'create') {
+      if (dialog.type === 'country') {
         const t = formImageId.trim();
-        const img =
-          t === "" ? undefined : Number(t);
+        const img = t === '' ? undefined : Number(t);
         const payload: {
           name: string;
-          type: "country";
+          type: 'country';
           imageId?: number | null;
           countryCode?: string;
-        } = { name, type: "country" };
-        if (t !== "" && Number.isFinite(img)) payload.imageId = img;
+        } = { name, type: 'country' };
+        if (t !== '' && Number.isFinite(img)) payload.imageId = img;
         if (codeRaw.length === 2) payload.countryCode = codeRaw;
         create.mutate(payload, { onSuccess: closeDialog });
         return;
       }
-      if (dialog.type === "state" && dialog.parentId != null) {
+      if (dialog.type === 'state' && dialog.parentId != null) {
         create.mutate(
-          { name, type: "state", parentId: dialog.parentId },
-          { onSuccess: closeDialog }
+          { name, type: 'state', parentId: dialog.parentId },
+          { onSuccess: closeDialog },
         );
         return;
       }
-      if (dialog.type === "city" && dialog.parentId != null) {
+      if (dialog.type === 'city' && dialog.parentId != null) {
         const t = formImageId.trim();
         const payload: {
           name: string;
-          type: "city";
+          type: 'city';
           parentId: number;
           imageId?: number | null;
-        } = { name, type: "city", parentId: dialog.parentId };
-        if (t !== "") {
+        } = { name, type: 'city', parentId: dialog.parentId };
+        if (t !== '') {
           const img = Number(t);
           if (Number.isFinite(img)) payload.imageId = img;
         }
@@ -300,7 +275,7 @@ export default function LocationsPage() {
       return;
     }
 
-    if (dialog.mode === "edit") {
+    if (dialog.mode === 'edit') {
       const node = dialog.node;
       const body: {
         name: string;
@@ -309,36 +284,32 @@ export default function LocationsPage() {
         countryCode?: string | null;
       } = { name };
 
-      if (node.type === "country" || node.type === "city") {
+      if (node.type === 'country' || node.type === 'city') {
         const t = formImageId.trim();
-        if (t === "") body.imageId = null;
+        if (t === '') body.imageId = null;
         else {
           const n = Number(t);
           if (Number.isFinite(n)) body.imageId = n;
         }
       }
 
-      if (node.type === "country") {
+      if (node.type === 'country') {
         if (codeRaw.length === 0) body.countryCode = null;
         else if (codeRaw.length === 2) body.countryCode = codeRaw;
       }
 
-      if (node.type === "state" && formParentId) {
+      if (node.type === 'state' && formParentId) {
         body.parentId = Number(formParentId);
       }
-      if (node.type === "city" && formParentId) {
+      if (node.type === 'city' && formParentId) {
         body.parentId = Number(formParentId);
       }
 
-      update.mutate(
-        { id: node.id, body },
-        { onSuccess: closeDialog }
-      );
+      update.mutate({ id: node.id, body }, { onSuccess: closeDialog });
     }
   };
 
-  const dialogBusy =
-    create.isPending || update.isPending || uploadFile.isPending;
+  const dialogBusy = create.isPending || update.isPending || uploadFile.isPending;
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -354,7 +325,7 @@ export default function LocationsPage() {
             </p>
           </div>
         </div>
-        <Button onClick={() => setDialog({ mode: "create", type: "country" })}>
+        <Button onClick={() => setDialog({ mode: 'create', type: 'country' })}>
           <Plus className="mr-2 h-4 w-4" />
           Add country
         </Button>
@@ -408,12 +379,15 @@ export default function LocationsPage() {
                           ) : null}
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {nStates} {nStates === 1 ? "state" : "states"}
+                          {nStates} {nStates === 1 ? 'state' : 'states'}
                           <span className="mx-1.5">·</span>
-                          {nCities} {nCities === 1 ? "city" : "cities"}
+                          {nCities} {nCities === 1 ? 'city' : 'cities'}
                         </p>
                       </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" aria-hidden />
+                      <ChevronRight
+                        className="h-5 w-5 text-muted-foreground shrink-0"
+                        aria-hidden
+                      />
                     </button>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-0.5 p-1.5 bg-muted/30 shrink-0">
                       <Button
@@ -421,9 +395,7 @@ export default function LocationsPage() {
                         variant="ghost"
                         className="h-9 w-9 p-0"
                         aria-label={`Edit ${country.name}`}
-                        onClick={() =>
-                          setDialog({ mode: "edit", node: country })
-                        }
+                        onClick={() => setDialog({ mode: 'edit', node: country })}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -492,8 +464,7 @@ export default function LocationsPage() {
                           <span>No ISO country code set.</span>
                         )}
                         <span className="block mt-1 text-muted-foreground font-normal">
-                          States and cities used when users pick a location for
-                          places.
+                          States and cities used when users pick a location for places.
                         </span>
                       </SheetDescription>
                     </div>
@@ -503,9 +474,7 @@ export default function LocationsPage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() =>
-                      setDialog({ mode: "edit", node: activeCountry })
-                    }
+                    onClick={() => setDialog({ mode: 'edit', node: activeCountry })}
                   >
                     <Pencil className="h-3.5 w-3.5 mr-1.5" />
                     Edit country
@@ -514,8 +483,8 @@ export default function LocationsPage() {
                     size="sm"
                     onClick={() =>
                       setDialog({
-                        mode: "create",
-                        type: "state",
+                        mode: 'create',
+                        type: 'state',
                         parentId: activeCountry.id,
                       })
                     }
@@ -533,15 +502,10 @@ export default function LocationsPage() {
                 ) : (
                   <div className="space-y-4">
                     {(activeCountry.children ?? []).map((state) => (
-                      <div
-                        key={state.id}
-                        className="rounded-lg border bg-card p-3 space-y-2"
-                      >
+                      <div key={state.id} className="rounded-lg border bg-card p-3 space-y-2">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className="font-medium truncate">
-                              {state.name}
-                            </span>
+                            <span className="font-medium truncate">{state.name}</span>
                             <Badge variant="outline" className="text-xs">
                               State
                             </Badge>
@@ -551,9 +515,7 @@ export default function LocationsPage() {
                               size="sm"
                               variant="ghost"
                               className="h-8"
-                              onClick={() =>
-                                setDialog({ mode: "edit", node: state })
-                              }
+                              onClick={() => setDialog({ mode: 'edit', node: state })}
                             >
                               <Pencil className="h-3 w-3" />
                             </Button>
@@ -563,8 +525,8 @@ export default function LocationsPage() {
                               className="h-8"
                               onClick={() =>
                                 setDialog({
-                                  mode: "create",
-                                  type: "city",
+                                  mode: 'create',
+                                  type: 'city',
                                   parentId: state.id,
                                 })
                               }
@@ -584,9 +546,7 @@ export default function LocationsPage() {
                         </div>
                         <ul className="text-sm pl-2 border-l-2 border-muted space-y-1 ml-1">
                           {(state.children ?? []).length === 0 ? (
-                            <li className="text-muted-foreground py-1">
-                              No cities
-                            </li>
+                            <li className="text-muted-foreground py-1">No cities</li>
                           ) : (
                             (state.children ?? []).map((city) => (
                               <li
@@ -611,9 +571,7 @@ export default function LocationsPage() {
                                     size="sm"
                                     variant="ghost"
                                     className="h-7 px-2"
-                                    onClick={() =>
-                                      setDialog({ mode: "edit", node: city })
-                                    }
+                                    onClick={() => setDialog({ mode: 'edit', node: city })}
                                   >
                                     <Pencil className="h-3 w-3" />
                                   </Button>
@@ -644,37 +602,33 @@ export default function LocationsPage() {
         </SheetContent>
       </Sheet>
 
-      <Dialog
-        open={dialog.mode !== "closed"}
-        onOpenChange={(o) => !o && closeDialog()}
-      >
+      <Dialog open={dialog.mode !== 'closed'} onOpenChange={(o) => !o && closeDialog()}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {dialog.mode === "create" && dialog.type === "country" && "New country"}
-              {dialog.mode === "create" && dialog.type === "state" && "New state"}
-              {dialog.mode === "create" && dialog.type === "city" && "New city"}
-              {dialog.mode === "edit" && `Edit ${dialog.node.type}`}
+              {dialog.mode === 'create' && dialog.type === 'country' && 'New country'}
+              {dialog.mode === 'create' && dialog.type === 'state' && 'New state'}
+              {dialog.mode === 'create' && dialog.type === 'city' && 'New city'}
+              {dialog.mode === 'edit' && `Edit ${dialog.node.type}`}
             </DialogTitle>
             <DialogDescription>
-              {dialog.mode === "create" && dialog.type === "state" && (
+              {dialog.mode === 'create' && dialog.type === 'state' && (
                 <>Parent country is set from where you clicked.</>
               )}
-              {dialog.mode === "create" && dialog.type === "city" && (
+              {dialog.mode === 'create' && dialog.type === 'city' && (
                 <>Parent state is set from where you clicked.</>
               )}
-              {dialog.mode === "edit" &&
-                (dialog.node.type === "country" ||
-                  dialog.node.type === "city") && (
-                <>
-                  Upload a cover image or set a file ID. Clear the ID and save
-                  to remove the image.
-                </>
-              )}
-              {dialog.mode === "create" && dialog.type === "country" && (
+              {dialog.mode === 'edit' &&
+                (dialog.node.type === 'country' || dialog.node.type === 'city') && (
+                  <>
+                    Upload a cover image or set a file ID. Clear the ID and save to remove the
+                    image.
+                  </>
+                )}
+              {dialog.mode === 'create' && dialog.type === 'country' && (
                 <>Optional cover image for this country.</>
               )}
-              {dialog.mode === "create" && dialog.type === "city" && (
+              {dialog.mode === 'create' && dialog.type === 'city' && (
                 <>Optional cover image for this city.</>
               )}
             </DialogDescription>
@@ -689,8 +643,8 @@ export default function LocationsPage() {
                 placeholder="Name"
               />
             </div>
-            {((dialog.mode === "create" && dialog.type === "country") ||
-              (dialog.mode === "edit" && dialog.node.type === "country")) && (
+            {((dialog.mode === 'create' && dialog.type === 'country') ||
+              (dialog.mode === 'edit' && dialog.node.type === 'country')) && (
               <div className="grid gap-2">
                 <Label htmlFor="loc-country-code">ISO country code (optional)</Label>
                 <Input
@@ -699,9 +653,7 @@ export default function LocationsPage() {
                   maxLength={2}
                   value={formCountryCode}
                   onChange={(e) =>
-                    setFormCountryCode(
-                      e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase()
-                    )
+                    setFormCountryCode(e.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase())
                   }
                   placeholder="e.g. AM"
                   autoComplete="off"
@@ -711,7 +663,7 @@ export default function LocationsPage() {
                 </p>
               </div>
             )}
-            {dialog.mode === "create" && dialog.type === "country" && (
+            {dialog.mode === 'create' && dialog.type === 'country' && (
               <LocationCoverImageFields
                 formImageId={formImageId}
                 setFormImageId={setFormImageId}
@@ -722,7 +674,7 @@ export default function LocationsPage() {
                 idSuffix="create-country"
               />
             )}
-            {dialog.mode === "create" && dialog.type === "city" && (
+            {dialog.mode === 'create' && dialog.type === 'city' && (
               <LocationCoverImageFields
                 formImageId={formImageId}
                 setFormImageId={setFormImageId}
@@ -733,7 +685,7 @@ export default function LocationsPage() {
                 idSuffix="create-city"
               />
             )}
-            {dialog.mode === "edit" && dialog.node.type === "country" && (
+            {dialog.mode === 'edit' && dialog.node.type === 'country' && (
               <LocationCoverImageFields
                 formImageId={formImageId}
                 setFormImageId={setFormImageId}
@@ -744,7 +696,7 @@ export default function LocationsPage() {
                 idSuffix="edit-country"
               />
             )}
-            {dialog.mode === "edit" && dialog.node.type === "city" && (
+            {dialog.mode === 'edit' && dialog.node.type === 'city' && (
               <LocationCoverImageFields
                 formImageId={formImageId}
                 setFormImageId={setFormImageId}
@@ -755,7 +707,7 @@ export default function LocationsPage() {
                 idSuffix="edit-city"
               />
             )}
-            {dialog.mode === "edit" && dialog.node.type === "state" && tree && (
+            {dialog.mode === 'edit' && dialog.node.type === 'state' && tree && (
               <div className="grid gap-2">
                 <Label>Country</Label>
                 <Select value={formParentId} onValueChange={setFormParentId}>
@@ -772,7 +724,7 @@ export default function LocationsPage() {
                 </Select>
               </div>
             )}
-            {dialog.mode === "edit" && dialog.node.type === "city" && (
+            {dialog.mode === 'edit' && dialog.node.type === 'city' && (
               <div className="grid gap-2">
                 <Label>State</Label>
                 <Select value={formParentId} onValueChange={setFormParentId}>
@@ -799,30 +751,23 @@ export default function LocationsPage() {
               disabled={
                 dialogBusy ||
                 !formName.trim() ||
-                (dialog.mode === "edit" &&
-                  dialog.node.type === "state" &&
-                  !formParentId) ||
-                (dialog.mode === "edit" &&
-                  dialog.node.type === "city" &&
-                  !formParentId)
+                (dialog.mode === 'edit' && dialog.node.type === 'state' && !formParentId) ||
+                (dialog.mode === 'edit' && dialog.node.type === 'city' && !formParentId)
               }
             >
               {dialogBusy ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
-              ) : dialog.mode === "create" ? (
-                "Create"
+              ) : dialog.mode === 'create' ? (
+                'Create'
               ) : (
-                "Save"
+                'Save'
               )}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={() => setDeleteTarget(null)}
-      >
+      <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete location?</AlertDialogTitle>
@@ -844,11 +789,7 @@ export default function LocationsPage() {
                 }
               }}
             >
-              {del.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                "Delete"
-              )}
+              {del.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

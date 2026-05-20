@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useTags, useCreateTag, useDeleteTag } from "@/hooks/use-tags";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { useState } from 'react';
+import { useTags, useCreateTag, useDeleteTag } from '@/hooks/use-tags';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,14 +14,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Trash2, Tag, Loader2 } from "lucide-react";
-import type { Tag as TagType } from "@/types";
-import { formatDate } from "@/lib/utils";
+} from '@/components/ui/alert-dialog';
+import { Card, CardContent } from '@/components/ui/card';
+import { Plus, Trash2, Tag, Loader2 } from 'lucide-react';
+import type { Tag as TagType } from '@/types';
+import { formatDate } from '@/lib/utils';
 
 export default function TagsPage() {
-  const [newTag, setNewTag] = useState("");
+  const [newTag, setNewTag] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<TagType | null>(null);
 
   const { data: tags, isLoading } = useTags();
@@ -31,7 +31,7 @@ export default function TagsPage() {
   const handleCreate = () => {
     if (!newTag.trim()) return;
     create.mutate(newTag.trim(), {
-      onSuccess: () => setNewTag(""),
+      onSuccess: () => setNewTag(''),
     });
   };
 
@@ -45,7 +45,7 @@ export default function TagsPage() {
           <h1 className="text-2xl font-bold">Tags</h1>
           <p className="text-muted-foreground text-sm">
             Manage place tags
-            {tags ? ` · ${tags.length} total` : ""}
+            {tags ? ` · ${tags.length} total` : ''}
           </p>
         </div>
       </div>
@@ -58,13 +58,10 @@ export default function TagsPage() {
               placeholder="New tag name..."
               value={newTag}
               onChange={(e) => setNewTag(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+              onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
               className="max-w-xs"
             />
-            <Button
-              onClick={handleCreate}
-              disabled={!newTag.trim() || create.isPending}
-            >
+            <Button onClick={handleCreate} disabled={!newTag.trim() || create.isPending}>
               {create.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -114,10 +111,7 @@ export default function TagsPage() {
       )}
 
       {/* Delete confirm */}
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={() => setDeleteTarget(null)}
-      >
+      <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Tag</AlertDialogTitle>

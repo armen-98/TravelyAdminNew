@@ -1,4 +1,4 @@
-export type PlaceClaimStatus = "pending" | "approved" | "rejected";
+export type PlaceClaimStatus = 'pending' | 'approved' | 'rejected';
 
 export type PlaceClaim = {
   id: number;

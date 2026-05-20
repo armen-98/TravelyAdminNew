@@ -1,19 +1,17 @@
-"use client";
+'use client';
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
-import type { AdminLocationNode } from "@/types";
-import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '@/lib/api';
+import type { AdminLocationNode } from '@/types';
+import { toast } from 'sonner';
 
-const treeKey = ["admin-locations-tree"] as const;
+const treeKey = ['admin-locations-tree'] as const;
 
 export function useAdminLocationTree() {
   return useQuery({
     queryKey: treeKey,
     queryFn: async () => {
-      const { data } = await api.get<{ data: AdminLocationNode[] }>(
-        "/admin/locations"
-      );
+      const { data } = await api.get<{ data: AdminLocationNode[] }>('/admin/locations');
       return data.data ?? [];
     },
   });
@@ -24,28 +22,23 @@ export function useCreateAdminLocation() {
   return useMutation({
     mutationFn: async (body: {
       name: string;
-      type: "country" | "state" | "city";
+      type: 'country' | 'state' | 'city';
       parentId?: number;
       imageId?: number | null;
       countryCode?: string;
     }) => {
-      const { data } = await api.post<{ data: AdminLocationNode }>(
-        "/admin/locations",
-        body
-      );
+      const { data } = await api.post<{ data: AdminLocationNode }>('/admin/locations', body);
       return data.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: treeKey });
-      toast.success("Location created");
+      toast.success('Location created');
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
       const msg =
         err.response?.data?.message ||
-        (typeof err.response?.data === "string"
-          ? err.response.data
-          : null);
-      toast.error(msg || "Failed to create location");
+        (typeof err.response?.data === 'string' ? err.response.data : null);
+      toast.error(msg || 'Failed to create location');
     },
   });
 }
@@ -65,22 +58,19 @@ export function useUpdateAdminLocation() {
         countryCode?: string | null;
       };
     }) => {
-      const { data } = await api.patch<{ data: AdminLocationNode }>(
-        `/admin/locations/${id}`,
-        body
-      );
+      const { data } = await api.patch<{ data: AdminLocationNode }>(`/admin/locations/${id}`, body);
       return data.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: treeKey });
-      toast.success("Location updated");
+      toast.success('Location updated');
     },
     onError: (err: { response?: { data?: { message?: string | string[] } } }) => {
       const d = err.response?.data;
       const msg =
-        (typeof d?.message === "string" ? d.message : null) ||
-        (Array.isArray(d?.message) ? d.message.join(", ") : null);
-      toast.error(msg || "Failed to update location");
+        (typeof d?.message === 'string' ? d.message : null) ||
+        (Array.isArray(d?.message) ? d.message.join(', ') : null);
+      toast.error(msg || 'Failed to update location');
     },
   });
 }
@@ -93,15 +83,13 @@ export function useDeleteAdminLocation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: treeKey });
-      toast.success("Location deleted");
+      toast.success('Location deleted');
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
       const msg =
         err.response?.data?.message ||
-        (typeof err.response?.data === "string"
-          ? err.response.data
-          : null);
-      toast.error(msg || "Failed to delete location");
+        (typeof err.response?.data === 'string' ? err.response.data : null);
+      toast.error(msg || 'Failed to delete location');
     },
   });
 }

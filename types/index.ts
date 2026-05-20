@@ -1,4 +1,4 @@
-export type UserRole = "super-admin" | "admin" | "moderator" | "business" | "user";
+export type UserRole = 'super-admin' | 'admin' | 'moderator' | 'business' | 'user';
 
 export interface User {
   id: number;
@@ -15,7 +15,7 @@ export interface User {
   updatedAt: string;
   deactivatedAt?: string;
   deletedAt?: string | null;
-  deletedBy?: "self" | "admin" | null;
+  deletedBy?: 'self' | 'admin' | null;
   deletionReason?: string | null;
 }
 
@@ -24,7 +24,7 @@ export interface PlaceModerationHistoryItem {
   eventType: string;
   reason: string | null;
   createdAt: string;
-  actor: Pick<User, "id" | "fullName" | "email"> | null;
+  actor: Pick<User, 'id' | 'fullName' | 'email'> | null;
 }
 
 export interface Place {
@@ -42,7 +42,7 @@ export interface Place {
   openingHours?: OpeningHours | null;
   openFullDay?: boolean;
   social?: SocialLinks | null;
-  priceType?: "range" | "fixed" | "onRequest" | "free" | "discounted" | null;
+  priceType?: 'range' | 'fixed' | 'onRequest' | 'free' | 'discounted' | null;
   price?: number | null;
   minPrice?: number | null;
   maxPrice?: number | null;
@@ -270,7 +270,7 @@ export interface Notification {
 export interface Location {
   id: number;
   name: string;
-  type: "country" | "state" | "city";
+  type: 'country' | 'state' | 'city';
   parentId?: number;
   parent?: Location;
 }
@@ -279,7 +279,7 @@ export interface Location {
 export interface AdminLocationNode {
   id: number;
   name: string;
-  type: "country" | "state" | "city";
+  type: 'country' | 'state' | 'city';
   parentId: number | null;
   /** ISO 3166-1 alpha-2; only set for `type === "country"`. */
   countryCode?: string | null;
@@ -315,7 +315,7 @@ export interface ContactRequest {
   user?: User;
   name?: string | null;
   email?: string | null;
-  source?: "web" | "mobile";
+  source?: 'web' | 'mobile';
   subject: string;
   message: string;
   cc?: string | null;

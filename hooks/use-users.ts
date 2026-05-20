@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
-import type { User, PaginatedResponse } from "@/types";
-import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '@/lib/api';
+import type { User, PaginatedResponse } from '@/types';
+import { toast } from 'sonner';
 
 interface UsersParams {
   page?: number;
@@ -13,9 +13,9 @@ interface UsersParams {
 
 export function useUsers(params: UsersParams = {}) {
   return useQuery({
-    queryKey: ["users", params],
+    queryKey: ['users', params],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<User>>("/admin/users", {
+      const { data } = await api.get<PaginatedResponse<User>>('/admin/users', {
         params: { page: 1, limit: 20, ...params },
       });
       return data;
@@ -25,7 +25,7 @@ export function useUsers(params: UsersParams = {}) {
 
 export function useUser(id: number) {
   return useQuery({
-    queryKey: ["users", id],
+    queryKey: ['users', id],
     queryFn: async () => {
       const { data } = await api.get<{ data: User }>(`/admin/users/${id}`);
       return data.data;
@@ -42,10 +42,10 @@ export function useActivateUser() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      toast.success("User activated successfully");
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('User activated successfully');
     },
-    onError: () => toast.error("Failed to activate user"),
+    onError: () => toast.error('Failed to activate user'),
   });
 }
 
@@ -57,10 +57,10 @@ export function useDeactivateUser() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      toast.success("User deactivated successfully");
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('User deactivated successfully');
     },
-    onError: () => toast.error("Failed to deactivate user"),
+    onError: () => toast.error('Failed to deactivate user'),
   });
 }
 
@@ -72,10 +72,10 @@ export function useAssignUserRole() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      toast.success("User role updated successfully");
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('User role updated successfully');
     },
-    onError: () => toast.error("Failed to update user role"),
+    onError: () => toast.error('Failed to update user role'),
   });
 }
 
@@ -87,11 +87,13 @@ export function useSetUserPro() {
       return data;
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success(
-        variables.isPro ? "User upgraded to Pro successfully" : "User downgraded to Free successfully"
+        variables.isPro
+          ? 'User upgraded to Pro successfully'
+          : 'User downgraded to Free successfully',
       );
     },
-    onError: () => toast.error("Failed to update user plan"),
+    onError: () => toast.error('Failed to update user plan'),
   });
 }

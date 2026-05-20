@@ -1,52 +1,51 @@
-"use client";
+'use client';
 
-import { useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useNotifications, useSendNotification } from '@/hooks/use-notifications';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Bell, Send, Loader2 } from 'lucide-react';
+import { formatDateTime } from '@/lib/utils';
+import { useUsers } from '@/hooks/use-users';
 import {
-  useNotifications,
-  useSendNotification,
-} from "@/hooks/use-notifications";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Bell, Send, Loader2 } from "lucide-react";
-import { formatDateTime } from "@/lib/utils";
-import { useUsers } from "@/hooks/use-users";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-const notifSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  body: z.string().min(1, "Message is required"),
-  audience: z.enum(["all", "selected"]),
-  userIds: z.array(z.number()).optional(),
-}).superRefine((values, ctx) => {
-  if (values.audience === "selected" && (!values.userIds || values.userIds.length === 0)) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["userIds"],
-      message: "Select at least one user",
-    });
-  }
-});
+const notifSchema = z
+  .object({
+    title: z.string().min(1, 'Title is required'),
+    body: z.string().min(1, 'Message is required'),
+    audience: z.enum(['all', 'selected']),
+    userIds: z.array(z.number()).optional(),
+  })
+  .superRefine((values, ctx) => {
+    if (values.audience === 'selected' && (!values.userIds || values.userIds.length === 0)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['userIds'],
+        message: 'Select at least one user',
+      });
+    }
+  });
 
 type NotifForm = z.infer<typeof notifSchema>;
 
 export default function NotificationsPage() {
   const { data, isLoading } = useNotifications({ limit: 30 });
   const send = useSendNotification();
-  const [usersSearch, setUsersSearch] = useState("");
+  const [usersSearch, setUsersSearch] = useState('');
   const { data: usersData, isLoading: usersLoading } = useUsers({
     page: 1,
     limit: 200,
@@ -63,18 +62,18 @@ export default function NotificationsPage() {
   } = useForm<NotifForm>({
     resolver: zodResolver(notifSchema),
     defaultValues: {
-      audience: "all",
+      audience: 'all',
       userIds: [],
     },
   });
 
-  const audience = watch("audience");
-  const selectedUserIds = watch("userIds") ?? [];
+  const audience = watch('audience');
+  const selectedUserIds = watch('userIds') ?? [];
   const selectedUsersCount = selectedUserIds.length;
   const users = usersData?.data ?? [];
   const selectedUsersLabel = useMemo(() => {
-    if (selectedUsersCount === 0) return "No users selected";
-    if (selectedUsersCount === 1) return "1 user selected";
+    if (selectedUsersCount === 0) return 'No users selected';
+    if (selectedUsersCount === 1) return '1 user selected';
     return `${selectedUsersCount} users selected`;
   }, [selectedUsersCount]);
 
@@ -82,7 +81,7 @@ export default function NotificationsPage() {
     const next = selectedUserIds.includes(userId)
       ? selectedUserIds.filter((id) => id !== userId)
       : [...selectedUserIds, userId];
-    setValue("userIds", next, { shouldValidate: true });
+    setValue('userIds', next, { shouldValidate: true });
   };
 
   const onSubmit = (values: NotifForm) => {
@@ -90,17 +89,17 @@ export default function NotificationsPage() {
       {
         title: values.title,
         body: values.body,
-        userIds: values.audience === "selected" ? values.userIds : undefined,
+        userIds: values.audience === 'selected' ? values.userIds : undefined,
       },
       {
         onSuccess: () =>
           reset({
-            title: "",
-            body: "",
-            audience: "all",
+            title: '',
+            body: '',
+            audience: 'all',
             userIds: [],
           }),
-      }
+      },
     );
   };
 
@@ -123,9 +122,7 @@ export default function NotificationsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Send Notification</CardTitle>
-            <CardDescription>
-              Choose your audience and send a push notification
-            </CardDescription>
+            <CardDescription>Choose your audience and send a push notification</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -134,10 +131,10 @@ export default function NotificationsPage() {
                 <Select
                   value={audience}
                   onValueChange={(value) => {
-                    const nextAudience = value as "all" | "selected";
-                    setValue("audience", nextAudience, { shouldValidate: true });
-                    if (nextAudience === "all") {
-                      setValue("userIds", [], { shouldValidate: true });
+                    const nextAudience = value as 'all' | 'selected';
+                    setValue('audience', nextAudience, { shouldValidate: true });
+                    if (nextAudience === 'all') {
+                      setValue('userIds', [], { shouldValidate: true });
                     }
                   }}
                 >
@@ -153,30 +150,22 @@ export default function NotificationsPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="title">Title *</Label>
-                <Input
-                  id="title"
-                  {...register("title")}
-                  placeholder="Notification title"
-                />
-                {errors.title && (
-                  <p className="text-red-500 text-xs">{errors.title.message}</p>
-                )}
+                <Input id="title" {...register('title')} placeholder="Notification title" />
+                {errors.title && <p className="text-red-500 text-xs">{errors.title.message}</p>}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="body">Message *</Label>
                 <Textarea
                   id="body"
-                  {...register("body")}
+                  {...register('body')}
                   placeholder="Write your notification message..."
                   rows={4}
                 />
-                {errors.body && (
-                  <p className="text-red-500 text-xs">{errors.body.message}</p>
-                )}
+                {errors.body && <p className="text-red-500 text-xs">{errors.body.message}</p>}
               </div>
 
-              {audience === "selected" && (
+              {audience === 'selected' && (
                 <div className="space-y-2">
                   <Label htmlFor="users-search">Choose users *</Label>
                   <Input
@@ -192,9 +181,9 @@ export default function NotificationsPage() {
                       users.map((user) => {
                         const isSelected = selectedUserIds.includes(user.id);
                         const initials = (user.fullName || `User ${user.id}`)
-                          .split(" ")
+                          .split(' ')
                           .map((part) => part[0])
-                          .join("")
+                          .join('')
                           .slice(0, 2)
                           .toUpperCase();
                         return (
@@ -204,8 +193,8 @@ export default function NotificationsPage() {
                             onClick={() => toggleUserSelection(user.id)}
                             className={`w-full text-left px-3 py-2 rounded-md border text-sm transition ${
                               isSelected
-                                ? "border-blue-500 bg-blue-50 text-blue-700"
-                                : "border-border hover:bg-muted"
+                                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                : 'border-border hover:bg-muted'
                             }`}
                           >
                             <div className="flex items-center gap-3">
@@ -216,8 +205,12 @@ export default function NotificationsPage() {
                                 </AvatarFallback>
                               </Avatar>
                               <div className="min-w-0">
-                                <p className="font-medium truncate">{user.fullName || `User #${user.id}`}</p>
-                                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                                <p className="font-medium truncate">
+                                  {user.fullName || `User #${user.id}`}
+                                </p>
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {user.email}
+                                </p>
                               </div>
                             </div>
                           </button>
@@ -238,9 +231,7 @@ export default function NotificationsPage() {
 
               {/* Preview */}
               <div className="border rounded-lg p-4 bg-muted/30">
-                <p className="text-xs text-muted-foreground font-medium mb-2">
-                  Preview
-                </p>
+                <p className="text-xs text-muted-foreground font-medium mb-2">Preview</p>
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
                     <Bell className="h-4 w-4 text-white" />
@@ -252,17 +243,13 @@ export default function NotificationsPage() {
                 </div>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={send.isPending}
-              >
+              <Button type="submit" className="w-full" disabled={send.isPending}>
                 {send.isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <Send className="mr-2 h-4 w-4" />
                 )}
-                {audience === "all" ? "Send to All Users" : "Send to Selected Users"}
+                {audience === 'all' ? 'Send to All Users' : 'Send to Selected Users'}
               </Button>
             </form>
           </CardContent>
@@ -283,11 +270,8 @@ export default function NotificationsPage() {
               </div>
             ) : data?.data && data.data.length > 0 ? (
               <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
-                {data.data.map((notif: import("@/types").Notification) => (
-                  <div
-                    key={notif.id}
-                    className="border rounded-lg p-3 space-y-1"
-                  >
+                {data.data.map((notif: import('@/types').Notification) => (
+                  <div key={notif.id} className="border rounded-lg p-3 space-y-1">
                     <div className="flex items-start justify-between gap-2">
                       <p className="font-medium text-sm">{notif.title}</p>
                       <Badge variant="outline" className="text-xs flex-shrink-0">

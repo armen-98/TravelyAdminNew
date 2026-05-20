@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
-import api from "@/lib/api";
-import type { User, Place, PlaceReview, PaginatedResponse } from "@/types";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
+import api from '@/lib/api';
+import type { User, Place, PlaceReview, PaginatedResponse } from '@/types';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,14 +23,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   ArrowLeft,
   UserCheck,
@@ -44,17 +44,17 @@ import {
   Calendar,
   MessageSquare,
   ShieldCheck,
-} from "lucide-react";
-import { formatDate, getRoleBadgeVariant } from "@/lib/utils";
-import { toast } from "sonner";
-import { canManageUsers } from "@/lib/permissions";
-import { useAssignUserRole, useSetUserPro } from "@/hooks/use-users";
+} from 'lucide-react';
+import { formatDate, getRoleBadgeVariant } from '@/lib/utils';
+import { toast } from 'sonner';
+import { canManageUsers } from '@/lib/permissions';
+import { useAssignUserRole, useSetUserPro } from '@/hooks/use-users';
 
 function initials(name?: string) {
-  return (name ?? "?")
-    .split(" ")
+  return (name ?? '?')
+    .split(' ')
     .map((n) => n[0])
-    .join("")
+    .join('')
     .slice(0, 2)
     .toUpperCase();
 }
@@ -72,7 +72,7 @@ export default function UserDetailPage() {
 
   // ── User ──────────────────────────────────────────────────────────────────
   const { data: user, isLoading } = useQuery({
-    queryKey: ["users", id],
+    queryKey: ['users', id],
     queryFn: async () => {
       const { data } = await api.get<{ data: User }>(`/admin/users/${id}`);
       return data.data ?? data;
@@ -81,9 +81,9 @@ export default function UserDetailPage() {
 
   // ── User's places ─────────────────────────────────────────────────────────
   const { data: placesData, isLoading: placesLoading } = useQuery({
-    queryKey: ["places", { userId: id }],
+    queryKey: ['places', { userId: id }],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<Place>>("/admin/places", {
+      const { data } = await api.get<PaginatedResponse<Place>>('/admin/places', {
         params: { userId: id, limit: 50 },
       });
       return data;
@@ -93,12 +93,11 @@ export default function UserDetailPage() {
 
   // ── User's reviews ────────────────────────────────────────────────────────
   const { data: reviewsData, isLoading: reviewsLoading } = useQuery({
-    queryKey: ["reviews", { userId: id }],
+    queryKey: ['reviews', { userId: id }],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<PlaceReview>>(
-        "/admin/reviews",
-        { params: { userId: id, limit: 50 } }
-      );
+      const { data } = await api.get<PaginatedResponse<PlaceReview>>('/admin/reviews', {
+        params: { userId: id, limit: 50 },
+      });
       return data;
     },
     enabled: !!id,
@@ -108,20 +107,20 @@ export default function UserDetailPage() {
   const activate = useMutation({
     mutationFn: () => api.patch(`/admin/users/${id}/activate`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      toast.success("User activated");
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('User activated');
     },
   });
 
   const deactivate = useMutation({
     mutationFn: () => api.patch(`/admin/users/${id}/deactivate`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      toast.success("User deactivated");
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('User deactivated');
     },
   });
 
-  const places  = placesData?.data  ?? [];
+  const places = placesData?.data ?? [];
   const reviews = reviewsData?.data ?? [];
 
   // ── Loading ───────────────────────────────────────────────────────────────
@@ -146,12 +145,14 @@ export default function UserDetailPage() {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground">User not found.</p>
-        <Button variant="link" onClick={() => router.back()}>Go back</Button>
+        <Button variant="link" onClick={() => router.back()}>
+          Go back
+        </Button>
       </div>
     );
   }
 
-  const role = user.role?.name ?? "user";
+  const role = user.role?.name ?? 'user';
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -167,9 +168,9 @@ export default function UserDetailPage() {
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-muted-foreground" />
               <Select
-                value={user.role?.name ?? "user"}
+                value={user.role?.name ?? 'user'}
                 onValueChange={(roleName) => {
-                  if (roleName === "super-admin" || roleName === "admin") {
+                  if (roleName === 'super-admin' || roleName === 'admin') {
                     setPendingRole(roleName);
                   } else {
                     assignRole.mutate({ id: Number(id), roleName });
@@ -192,14 +193,12 @@ export default function UserDetailPage() {
 
             {/* Activate / Deactivate */}
             <Button
-              variant={user.isPro ? "secondary" : "default"}
+              variant={user.isPro ? 'secondary' : 'default'}
               size="sm"
-              onClick={() =>
-                setUserPro.mutate({ id: Number(id), isPro: !user.isPro })
-              }
+              onClick={() => setUserPro.mutate({ id: Number(id), isPro: !user.isPro })}
               disabled={setUserPro.isPending}
             >
-              {user.isPro ? "Set Free" : "Set Pro"}
+              {user.isPro ? 'Set Free' : 'Set Pro'}
             </Button>
 
             {user.deletedAt ? null : user.isActive ? (
@@ -243,8 +242,12 @@ export default function UserDetailPage() {
                 <Badge variant={getRoleBadgeVariant(role)} className="capitalize">
                   {role}
                 </Badge>
-                <Badge variant={user.deletedAt ? "destructive" : user.isActive ? "success" : "destructive"}>
-                  {user.deletedAt ? "Deleted" : user.isActive ? "Active" : "Inactive"}
+                <Badge
+                  variant={
+                    user.deletedAt ? 'destructive' : user.isActive ? 'success' : 'destructive'
+                  }
+                >
+                  {user.deletedAt ? 'Deleted' : user.isActive ? 'Active' : 'Inactive'}
                 </Badge>
                 {user.isPro && <Badge>Pro</Badge>}
               </div>
@@ -252,12 +255,12 @@ export default function UserDetailPage() {
               {user.deletedAt && (
                 <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                   <p className="font-medium">
-                    {user.deletedBy === "self"
-                      ? "This user deleted their own account."
-                      : "This account has been deleted."}
+                    {user.deletedBy === 'self'
+                      ? 'This user deleted their own account.'
+                      : 'This account has been deleted.'}
                   </p>
                   <p className="mt-1 text-red-600">
-                    Reason: {user.deletionReason || "User deleted own account"}
+                    Reason: {user.deletionReason || 'User deleted own account'}
                   </p>
                 </div>
               )}
@@ -276,8 +279,12 @@ export default function UserDetailPage() {
                 {user.website && (
                   <div className="flex items-center gap-2">
                     <Globe className="h-4 w-4 flex-shrink-0" />
-                    <a href={user.website} target="_blank" rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline truncate">
+                    <a
+                      href={user.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline truncate"
+                    >
                       {user.website}
                     </a>
                   </div>
@@ -367,14 +374,26 @@ export default function UserDetailPage() {
                           <p className="font-medium text-sm truncate">{place.name}</p>
                           <p className="text-xs text-muted-foreground truncate">
                             {place.category?.name}
-                            {place.city?.name ? ` · ${place.city.name}` : ""}
+                            {place.city?.name ? ` · ${place.city.name}` : ''}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        {place.isVerified === true  && <Badge variant="success" className="text-xs">Approved</Badge>}
-                        {place.isVerified === false && <Badge variant="destructive" className="text-xs">Rejected</Badge>}
-                        {place.isVerified === null  && <Badge variant="warning" className="text-xs">Pending</Badge>}
+                        {place.isVerified === true && (
+                          <Badge variant="success" className="text-xs">
+                            Approved
+                          </Badge>
+                        )}
+                        {place.isVerified === false && (
+                          <Badge variant="destructive" className="text-xs">
+                            Rejected
+                          </Badge>
+                        )}
+                        {place.isVerified === null && (
+                          <Badge variant="warning" className="text-xs">
+                            Pending
+                          </Badge>
+                        )}
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                           {Number(place.averageRating).toFixed(1)}
@@ -428,15 +447,27 @@ export default function UserDetailPage() {
                                 key={i}
                                 className={`h-3 w-3 ${
                                   i < Number(review.rating)
-                                    ? "text-yellow-500 fill-yellow-500"
-                                    : "text-muted-foreground/30"
+                                    ? 'text-yellow-500 fill-yellow-500'
+                                    : 'text-muted-foreground/30'
                                 }`}
                               />
                             ))}
                           </div>
-                          {review.isActive === true  && <Badge variant="success" className="text-xs">Approved</Badge>}
-                          {review.isActive === false && <Badge variant="destructive" className="text-xs">Rejected</Badge>}
-                          {review.isActive === null  && <Badge variant="warning" className="text-xs">Pending</Badge>}
+                          {review.isActive === true && (
+                            <Badge variant="success" className="text-xs">
+                              Approved
+                            </Badge>
+                          )}
+                          {review.isActive === false && (
+                            <Badge variant="destructive" className="text-xs">
+                              Rejected
+                            </Badge>
+                          )}
+                          {review.isActive === null && (
+                            <Badge variant="warning" className="text-xs">
+                              Pending
+                            </Badge>
+                          )}
                         </div>
                         {review.comment && (
                           <p className="text-sm text-muted-foreground">{review.comment}</p>
@@ -465,18 +496,16 @@ export default function UserDetailPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Assign Privileged Role</AlertDialogTitle>
             <AlertDialogDescription>
-              You are about to assign{" "}
-              <strong className="capitalize">{pendingRole}</strong> to{" "}
-              <strong>{user?.fullName}</strong>. This grants elevated access to
-              the admin panel. Are you sure?
+              You are about to assign <strong className="capitalize">{pendingRole}</strong> to{' '}
+              <strong>{user?.fullName}</strong>. This grants elevated access to the admin panel. Are
+              you sure?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                if (pendingRole)
-                  assignRole.mutate({ id: Number(id), roleName: pendingRole });
+                if (pendingRole) assignRole.mutate({ id: Number(id), roleName: pendingRole });
                 setPendingRole(null);
               }}
             >
@@ -487,17 +516,13 @@ export default function UserDetailPage() {
       </AlertDialog>
 
       {/* Deactivate Confirmation */}
-      <AlertDialog
-        open={showDeactivateConfirm}
-        onOpenChange={setShowDeactivateConfirm}
-      >
+      <AlertDialog open={showDeactivateConfirm} onOpenChange={setShowDeactivateConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Deactivate User</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to deactivate{" "}
-              <strong>{user.fullName}</strong>? They will lose access to their
-              account immediately.
+              Are you sure you want to deactivate <strong>{user.fullName}</strong>? They will lose
+              access to their account immediately.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

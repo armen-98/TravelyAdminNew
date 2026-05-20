@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
-import type { PlaceClaim } from "@/types/claim";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import api from '@/lib/api';
+import type { PlaceClaim } from '@/types/claim';
 
 type ClaimsListResponse = {
   data: PlaceClaim[];
@@ -17,9 +17,9 @@ export function useClaims(params: {
   placeId?: number;
 }) {
   return useQuery({
-    queryKey: ["admin", "claims", params],
+    queryKey: ['admin', 'claims', params],
     queryFn: async () => {
-      const { data } = await api.get<ClaimsListResponse>("/admin/claims", {
+      const { data } = await api.get<ClaimsListResponse>('/admin/claims', {
         params,
       });
       return data;
@@ -29,7 +29,7 @@ export function useClaims(params: {
 
 export function useClaim(id: number | null) {
   return useQuery({
-    queryKey: ["admin", "claims", id],
+    queryKey: ['admin', 'claims', id],
     enabled: id != null && id > 0,
     queryFn: async () => {
       const { data } = await api.get<{ data: PlaceClaim }>(`/admin/claims/${id}`);
@@ -41,21 +41,15 @@ export function useClaim(id: number | null) {
 export function useApproveClaim() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      id,
-      adminNotes,
-    }: {
-      id: number;
-      adminNotes?: string;
-    }) => {
+    mutationFn: async ({ id, adminNotes }: { id: number; adminNotes?: string }) => {
       const { data } = await api.patch(`/admin/claims/${id}/approve`, {
         adminNotes,
       });
       return data;
     },
     onSuccess: (_, { id }) => {
-      qc.invalidateQueries({ queryKey: ["admin", "claims"] });
-      qc.invalidateQueries({ queryKey: ["admin", "claims", id] });
+      qc.invalidateQueries({ queryKey: ['admin', 'claims'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'claims', id] });
     },
   });
 }
@@ -79,18 +73,18 @@ export function useRejectClaim() {
       return data;
     },
     onSuccess: (_, { id }) => {
-      qc.invalidateQueries({ queryKey: ["admin", "claims"] });
-      qc.invalidateQueries({ queryKey: ["admin", "claims", id] });
+      qc.invalidateQueries({ queryKey: ['admin', 'claims'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'claims', id] });
     },
   });
 }
 
 export function useClaimCostSetting() {
   return useQuery({
-    queryKey: ["claim", "settings", "cost"],
+    queryKey: ['claim', 'settings', 'cost'],
     queryFn: async () => {
       const { data } = await api.get<{ data: { claimCost: number | null } }>(
-        "/claim/settings/cost",
+        '/claim/settings/cost',
       );
       return data.data?.claimCost ?? null;
     },
@@ -101,11 +95,11 @@ export function useUpdateClaimCostSetting() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (claimCost: number | null) => {
-      const { data } = await api.post("/claim/settings/cost", { claimCost });
+      const { data } = await api.post('/claim/settings/cost', { claimCost });
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["claim", "settings", "cost"] });
+      qc.invalidateQueries({ queryKey: ['claim', 'settings', 'cost'] });
     },
   });
 }

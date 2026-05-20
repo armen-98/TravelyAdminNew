@@ -1,24 +1,24 @@
-"use client";
+'use client';
 
-import { useParams, useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
-import api from "@/lib/api";
-import type { ContactRequest } from "@/types";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { formatDate } from "@/lib/utils";
-import { ExternalLink, ArrowLeft, File } from "lucide-react";
-import { useState } from "react";
+import { useParams, useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
+import Link from 'next/link';
+import api from '@/lib/api';
+import type { ContactRequest } from '@/types';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { formatDate } from '@/lib/utils';
+import { ExternalLink, ArrowLeft, File } from 'lucide-react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { useResolveContactRequest } from "@/hooks/use-contact-requests";
+} from '@/components/ui/dialog';
+import { useResolveContactRequest } from '@/hooks/use-contact-requests';
 
 export default function ContactRequestDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -33,12 +33,10 @@ export default function ContactRequestDetailPage() {
   const resolveMutation = useResolveContactRequest();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["contact-request", id],
+    queryKey: ['contact-request', id],
     enabled: !!id,
     queryFn: async () => {
-      const res = await api.get<{ data: ContactRequest }>(
-        `/admin/contact-requests/${id}`,
-      );
+      const res = await api.get<{ data: ContactRequest }>(`/admin/contact-requests/${id}`);
       return res.data.data ?? (res.data as any);
     },
   });
@@ -72,9 +70,7 @@ export default function ContactRequestDetailPage() {
 
   const attachmentUrl = request.attachmentFile?.url;
   const mimeType =
-    (request.attachmentFile as any)?.mimetype ??
-    (request.attachmentFile as any)?.mimeType ??
-    "";
+    (request.attachmentFile as any)?.mimetype ?? (request.attachmentFile as any)?.mimeType ?? '';
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -84,8 +80,8 @@ export default function ContactRequestDetailPage() {
           Back
         </Button>
         <h1 className="text-2xl font-bold">Contact Request #{request.id}</h1>
-        <Badge variant={request.isResolved ? "success" : "warning"}>
-          {request.isResolved ? "Resolved" : "New"}
+        <Badge variant={request.isResolved ? 'success' : 'warning'}>
+          {request.isResolved ? 'Resolved' : 'New'}
         </Badge>
 
         {!request.isResolved ? (
@@ -115,10 +111,10 @@ export default function ContactRequestDetailPage() {
                 request.user?.email ??
                 request.name ??
                 request.email ??
-                "Guest"}
+                'Guest'}
             </p>
             <p className="text-sm text-muted-foreground">
-              {request.user?.email ?? request.email ?? ""}
+              {request.user?.email ?? request.email ?? ''}
             </p>
           </CardContent>
         </Card>
@@ -141,7 +137,7 @@ export default function ContactRequestDetailPage() {
           <CardContent className="p-5 space-y-3">
             <p className="text-sm text-muted-foreground">Source</p>
             <Badge variant="outline" className="uppercase">
-              {request.source ?? "mobile"}
+              {request.source ?? 'mobile'}
             </Badge>
           </CardContent>
         </Card>
@@ -166,26 +162,22 @@ export default function ContactRequestDetailPage() {
 
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Message</p>
-            <p className="whitespace-pre-wrap text-sm text-muted-foreground">
-              {request.message}
-            </p>
+            <p className="whitespace-pre-wrap text-sm text-muted-foreground">{request.message}</p>
           </div>
 
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">CC</p>
-            <p className="text-sm text-muted-foreground">
-              {request.cc ? request.cc : "—"}
-            </p>
+            <p className="text-sm text-muted-foreground">{request.cc ? request.cc : '—'}</p>
           </div>
 
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Attachment</p>
             {attachmentUrl ? (
-              mimeType.startsWith("image/") ? (
+              mimeType.startsWith('image/') ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={attachmentUrl}
-                  alt={request.attachmentFile?.filename ?? "attachment"}
+                  alt={request.attachmentFile?.filename ?? 'attachment'}
                   className="w-[100px] h-[100px] object-cover rounded border cursor-pointer hover:opacity-90"
                   onClick={() =>
                     setAttachmentPreview({
@@ -194,13 +186,13 @@ export default function ContactRequestDetailPage() {
                       mimetype: mimeType,
                     })
                   }
-                  title={request.attachmentFile?.filename ?? "Attachment"}
+                  title={request.attachmentFile?.filename ?? 'Attachment'}
                 />
               ) : (
                 <Button
                   variant="outline"
                   className="gap-2"
-                  onClick={() => window.open(attachmentUrl, "_blank")}
+                  onClick={() => window.open(attachmentUrl, '_blank')}
                 >
                   <ExternalLink className="h-4 w-4" />
                   View file
@@ -230,16 +222,14 @@ export default function ContactRequestDetailPage() {
         <DialogContent className="sm:max-w-5xl">
           <DialogHeader>
             <DialogTitle>Attachment</DialogTitle>
-            <DialogDescription>
-              {attachmentPreview?.filename ?? "No filename"}
-            </DialogDescription>
+            <DialogDescription>{attachmentPreview?.filename ?? 'No filename'}</DialogDescription>
           </DialogHeader>
 
-          {attachmentPreview?.mimetype?.startsWith("image/") ? (
+          {attachmentPreview?.mimetype?.startsWith('image/') ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={attachmentPreview.url}
-              alt={attachmentPreview.filename ?? "attachment"}
+              alt={attachmentPreview.filename ?? 'attachment'}
               className="w-full max-h-[80vh] object-contain rounded-lg border bg-muted"
             />
           ) : null}
@@ -248,4 +238,3 @@ export default function ContactRequestDetailPage() {
     </div>
   );
 }
-

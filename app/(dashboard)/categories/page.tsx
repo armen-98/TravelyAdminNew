@@ -1,38 +1,38 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { useSession } from "next-auth/react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useSession } from 'next-auth/react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import {
   useCategories,
   useCreateCategory,
   useUpdateCategory,
   useToggleCategoryActive,
   useDeleteCategory,
-} from "@/hooks/use-categories";
-import type { Category } from "@/types";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+} from '@/hooks/use-categories';
+import type { Category } from '@/types';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from "@/components/ui/sheet";
+} from '@/components/ui/sheet';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,8 +42,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Skeleton } from "@/components/ui/skeleton";
+} from '@/components/ui/alert-dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   MoreHorizontal,
   Plus,
@@ -53,21 +53,21 @@ import {
   ChevronDown,
   ChevronRight,
   FolderTree,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-import { isSuperAdmin } from "@/lib/permissions";
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
+import { isSuperAdmin } from '@/lib/permissions';
 
 // ── Schema ─────────────────────────────────────────────────────────────────
 
 const categorySchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
   icon: z.string().optional(),
   color: z.string().optional(),
@@ -100,7 +100,9 @@ function CategoryRow({
 
   return (
     <>
-      <tr className={cn("border-b transition-colors hover:bg-muted/40", depth > 0 && "bg-muted/20")}>
+      <tr
+        className={cn('border-b transition-colors hover:bg-muted/40', depth > 0 && 'bg-muted/20')}
+      >
         {/* Name */}
         <td className="px-4 py-3">
           <div className="flex items-center gap-2" style={{ paddingLeft: depth * 20 }}>
@@ -109,9 +111,11 @@ function CategoryRow({
                 onClick={() => setExpanded(!expanded)}
                 className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
               >
-                {expanded
-                  ? <ChevronDown className="h-4 w-4" />
-                  : <ChevronRight className="h-4 w-4" />}
+                {expanded ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
               </button>
             ) : (
               <span className="w-4 flex-shrink-0" />
@@ -169,16 +173,13 @@ function CategoryRow({
 
         {/* Active */}
         <td className="px-4 py-3">
-          <Switch
-            checked={cat.isActive}
-            onCheckedChange={() => toggleActive(cat.id)}
-          />
+          <Switch checked={cat.isActive} onCheckedChange={() => toggleActive(cat.id)} />
         </td>
 
         {/* Pro */}
         <td className="px-4 py-3">
-          <Badge variant={cat.isPro ? "default" : "outline"} className="text-xs">
-            {cat.isPro ? "Pro" : "Free"}
+          <Badge variant={cat.isPro ? 'default' : 'outline'} className="text-xs">
+            {cat.isPro ? 'Pro' : 'Free'}
           </Badge>
         </td>
 
@@ -215,7 +216,8 @@ function CategoryRow({
       </tr>
 
       {/* Subcategory rows */}
-      {hasChildren && expanded &&
+      {hasChildren &&
+        expanded &&
         cat.children!.map((child) => (
           <CategoryRow
             key={child.id}
@@ -260,16 +262,16 @@ export default function CategoriesPage() {
     resolver: zodResolver(categorySchema),
   });
 
-  const selectedParentId = watch("parentId");
+  const selectedParentId = watch('parentId');
 
   const openCreate = (parentId: number | null = null) => {
     setEditTarget(null);
     setDefaultParentId(parentId);
     reset({
-      name: "",
-      description: "",
-      icon: "",
-      color: "",
+      name: '',
+      description: '',
+      icon: '',
+      color: '',
       isPro: false,
       sortOrder: 0,
       parentId: parentId ?? undefined,
@@ -282,9 +284,9 @@ export default function CategoriesPage() {
     setDefaultParentId(null);
     reset({
       name: cat.name,
-      description: cat.description ?? "",
-      icon: cat.icon ?? "",
-      color: cat.color ?? "",
+      description: cat.description ?? '',
+      icon: cat.icon ?? '',
+      color: cat.color ?? '',
       isPro: cat.isPro,
       sortOrder: cat.sortOrder,
       parentId: cat.parentId ?? undefined,
@@ -319,7 +321,7 @@ export default function CategoriesPage() {
             <h1 className="text-2xl font-bold">Categories</h1>
             <p className="text-muted-foreground text-sm">
               Manage place categories and subcategories
-              {data?.total ? ` · ${data.total} total` : ""}
+              {data?.total ? ` · ${data.total} total` : ''}
             </p>
           </div>
         </div>
@@ -335,7 +337,9 @@ export default function CategoriesPage() {
           <thead>
             <tr className="border-b bg-muted/50">
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Name</th>
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground">Subcategories</th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                Subcategories
+              </th>
               <th className="px-4 py-3 text-center font-medium text-muted-foreground">Order</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Active</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Plan</th>
@@ -377,11 +381,11 @@ export default function CategoriesPage() {
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
         <SheetContent className="sm:max-w-md overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>{editTarget ? "Edit Category" : "New Category"}</SheetTitle>
+            <SheetTitle>{editTarget ? 'Edit Category' : 'New Category'}</SheetTitle>
             <SheetDescription>
               {editTarget
-                ? "Update category details below."
-                : "Fill in the details to create a new category."}
+                ? 'Update category details below.'
+                : 'Fill in the details to create a new category.'}
             </SheetDescription>
           </SheetHeader>
 
@@ -390,10 +394,8 @@ export default function CategoriesPage() {
             <div className="space-y-2">
               <Label>Parent Category</Label>
               <Select
-                value={selectedParentId != null ? String(selectedParentId) : "none"}
-                onValueChange={(val) =>
-                  setValue("parentId", val === "none" ? null : Number(val))
-                }
+                value={selectedParentId != null ? String(selectedParentId) : 'none'}
+                onValueChange={(val) => setValue('parentId', val === 'none' ? null : Number(val))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="None (top-level)" />
@@ -414,17 +416,15 @@ export default function CategoriesPage() {
 
             <div className="space-y-2">
               <Label htmlFor="name">Name *</Label>
-              <Input id="name" {...register("name")} placeholder="Category name" />
-              {errors.name && (
-                <p className="text-red-500 text-xs">{errors.name.message}</p>
-              )}
+              <Input id="name" {...register('name')} placeholder="Category name" />
+              {errors.name && <p className="text-red-500 text-xs">{errors.name.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
-                {...register("description")}
+                {...register('description')}
                 placeholder="Optional description"
                 rows={3}
               />
@@ -433,21 +433,21 @@ export default function CategoriesPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label htmlFor="icon">Icon</Label>
-                <Input id="icon" {...register("icon")} placeholder="e.g. 🏨" />
+                <Input id="icon" {...register('icon')} placeholder="e.g. 🏨" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="color">Color</Label>
                 <div className="flex gap-2">
                   <Input
                     id="color"
-                    {...register("color")}
+                    {...register('color')}
                     placeholder="#3b82f6"
                     className="flex-1"
                   />
-                  {watch("color") && (
+                  {watch('color') && (
                     <div
                       className="w-9 h-9 rounded-md border flex-shrink-0"
-                      style={{ backgroundColor: watch("color") ?? "" }}
+                      style={{ backgroundColor: watch('color') ?? '' }}
                     />
                   )}
                 </div>
@@ -470,8 +470,8 @@ export default function CategoriesPage() {
                 </div>
                 <Switch
                   id="isPro"
-                  checked={watch("isPro")}
-                  onCheckedChange={(checked) => setValue("isPro", checked)}
+                  checked={watch('isPro')}
+                  onCheckedChange={(checked) => setValue('isPro', checked)}
                   disabled={!canChangeProCategory}
                 />
               </div>
@@ -479,12 +479,7 @@ export default function CategoriesPage() {
 
             <div className="space-y-2">
               <Label htmlFor="sortOrder">Sort Order</Label>
-              <Input
-                id="sortOrder"
-                type="number"
-                {...register("sortOrder")}
-                placeholder="0"
-              />
+              <Input id="sortOrder" type="number" {...register('sortOrder')} placeholder="0" />
             </div>
 
             <div className="flex gap-2 pt-4">
@@ -501,7 +496,7 @@ export default function CategoriesPage() {
                 className="flex-1"
                 disabled={create.isPending || update.isPending}
               >
-                {editTarget ? "Save Changes" : "Create"}
+                {editTarget ? 'Save Changes' : 'Create'}
               </Button>
             </div>
           </form>
@@ -517,7 +512,8 @@ export default function CategoriesPage() {
               Are you sure you want to delete &quot;{deleteTarget?.name}&quot;?
               {(deleteTarget?.children?.length ?? 0) > 0 && (
                 <span className="block mt-1 text-orange-600 font-medium">
-                  This category has {deleteTarget!.children!.length} subcategories that must be deleted or reassigned first.
+                  This category has {deleteTarget!.children!.length} subcategories that must be
+                  deleted or reassigned first.
                 </span>
               )}
             </AlertDialogDescription>

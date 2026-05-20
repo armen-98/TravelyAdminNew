@@ -1,40 +1,37 @@
-"use client";
+'use client';
 
-import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useBlog, useCreateBlog, useUpdateBlog } from "@/hooks/use-blog";
-import { useCategories } from "@/hooks/use-categories";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useBlog, useCreateBlog, useUpdateBlog } from '@/hooks/use-blog';
+import { useCategories } from '@/hooks/use-categories';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Save } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import dynamic from "next/dynamic";
+} from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { ArrowLeft, Save } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import dynamic from 'next/dynamic';
 
-const RichTextEditor = dynamic(
-  () => import("@/components/forms/rich-text-editor"),
-  {
-    ssr: false,
-    loading: () => <Skeleton className="h-64 w-full" />,
-  }
-);
+const RichTextEditor = dynamic(() => import('@/components/forms/rich-text-editor'), {
+  ssr: false,
+  loading: () => <Skeleton className="h-64 w-full" />,
+});
 
 const blogSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string().min(1, "Content is required"),
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().min(1, 'Content is required'),
   image: z.string().optional(),
   categoryId: z.coerce.number().optional(),
   isActive: z.boolean().default(false),
@@ -45,7 +42,7 @@ type BlogForm = z.infer<typeof blogSchema>;
 export default function BlogEditorPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const isNew = id === "new";
+  const isNew = id === 'new';
 
   const { data: blog, isLoading } = useBlog(isNew ? 0 : Number(id));
   const { data: categories } = useCategories();
@@ -64,16 +61,16 @@ export default function BlogEditorPage() {
     defaultValues: { isActive: false },
   });
 
-  const isActive = watch("isActive");
-  const content = watch("description");
-  const categoryId = watch("categoryId");
+  const isActive = watch('isActive');
+  const content = watch('description');
+  const categoryId = watch('categoryId');
 
   useEffect(() => {
     if (blog && !isNew) {
       reset({
         title: blog.title,
         description: blog.description,
-        image: blog.image ?? "",
+        image: blog.image ?? '',
         categoryId: blog.category?.id,
         isActive: blog.isActive,
       });
@@ -82,12 +79,9 @@ export default function BlogEditorPage() {
 
   const onSubmit = (values: BlogForm) => {
     if (isNew) {
-      create.mutate(values, { onSuccess: () => router.push("/blog") });
+      create.mutate(values, { onSuccess: () => router.push('/blog') });
     } else {
-      update.mutate(
-        { id: Number(id), ...values },
-        { onSuccess: () => router.push("/blog") }
-      );
+      update.mutate({ id: Number(id), ...values }, { onSuccess: () => router.push('/blog') });
     }
   };
 
@@ -106,13 +100,11 @@ export default function BlogEditorPage() {
         <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-2xl font-bold">
-          {isNew ? "New Blog Post" : "Edit Blog Post"}
-        </h1>
+        <h1 className="text-2xl font-bold">{isNew ? 'New Blog Post' : 'Edit Blog Post'}</h1>
       </div>
       {!isNew && blog?.user?.id != null && (
         <p className="text-sm text-muted-foreground">
-          Author:{" "}
+          Author:{' '}
           <Link
             href={`/users/${blog.user.id}`}
             className="font-medium text-blue-600 hover:underline"
@@ -130,26 +122,18 @@ export default function BlogEditorPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="title">Title *</Label>
-              <Input
-                id="title"
-                {...register("title")}
-                placeholder="Blog post title"
-              />
-              {errors.title && (
-                <p className="text-red-500 text-xs">{errors.title.message}</p>
-              )}
+              <Input id="title" {...register('title')} placeholder="Blog post title" />
+              {errors.title && <p className="text-red-500 text-xs">{errors.title.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label>Content *</Label>
               <RichTextEditor
-                content={content ?? ""}
-                onChange={(val) => setValue("description", val)}
+                content={content ?? ''}
+                onChange={(val) => setValue('description', val)}
               />
               {errors.description && (
-                <p className="text-red-500 text-xs">
-                  {errors.description.message}
-                </p>
+                <p className="text-red-500 text-xs">{errors.description.message}</p>
               )}
             </div>
           </CardContent>
@@ -162,11 +146,7 @@ export default function BlogEditorPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="image">Cover Image URL</Label>
-              <Input
-                id="image"
-                {...register("image")}
-                placeholder="https://..."
-              />
+              <Input id="image" {...register('image')} placeholder="https://..." />
             </div>
 
             <div className="space-y-2">
@@ -175,13 +155,10 @@ export default function BlogEditorPage() {
                 value={
                   categoryId != null && !Number.isNaN(Number(categoryId))
                     ? String(categoryId)
-                    : "__none__"
+                    : '__none__'
                 }
                 onValueChange={(val) =>
-                  setValue(
-                    "categoryId",
-                    val === "__none__" ? undefined : Number(val)
-                  )
+                  setValue('categoryId', val === '__none__' ? undefined : Number(val))
                 }
               >
                 <SelectTrigger>
@@ -189,7 +166,7 @@ export default function BlogEditorPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__">Uncategorized (global)</SelectItem>
-                  {categories?.data?.map((cat: import("@/types").Category) => (
+                  {categories?.data?.map((cat: import('@/types').Category) => (
                     <SelectItem key={cat.id} value={String(cat.id)}>
                       {cat.name}
                     </SelectItem>
@@ -199,10 +176,7 @@ export default function BlogEditorPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <Switch
-                checked={isActive}
-                onCheckedChange={(val) => setValue("isActive", val)}
-              />
+              <Switch checked={isActive} onCheckedChange={(val) => setValue('isActive', val)} />
               <Label>Published</Label>
             </div>
           </CardContent>
@@ -212,12 +186,9 @@ export default function BlogEditorPage() {
           <Button type="button" variant="outline" onClick={() => router.back()}>
             Cancel
           </Button>
-          <Button
-            type="submit"
-            disabled={create.isPending || update.isPending}
-          >
+          <Button type="submit" disabled={create.isPending || update.isPending}>
             <Save className="mr-2 h-4 w-4" />
-            {isNew ? "Publish Post" : "Save Changes"}
+            {isNew ? 'Publish Post' : 'Save Changes'}
           </Button>
         </div>
       </form>

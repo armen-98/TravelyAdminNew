@@ -1,9 +1,18 @@
-"use client";
+'use client';
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
-import type { Place, PaginatedResponse } from "@/types";
-import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import api from '@/lib/api';
+import type { PaginatedResponse, Place } from '@/types';
+import { toast } from 'sonner';
+
+function getApiErrorMessage(error: unknown, fallback: string): string {
+  if (error && typeof error === 'object' && 'response' in error) {
+    const resp = (error as { response?: { data?: { message?: string | string[] } } }).response;
+    const msg = resp?.data?.message;
+    if (msg) return Array.isArray(msg) ? msg.join(', ') : msg;
+  }
+  return fallback;
+}
 
 interface PlacesParams {
   page?: number;
@@ -12,14 +21,14 @@ interface PlacesParams {
   categoryId?: number;
   isActive?: boolean;
   isVerified?: boolean;
-  verificationFilter?: "pending" | "approved" | "rejected";
+  verificationFilter?: 'pending' | 'approved' | 'rejected';
 }
 
 export function usePlaces(params: PlacesParams = {}) {
   return useQuery({
-    queryKey: ["places", params],
+    queryKey: ['places', params],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<Place>>("/admin/places", {
+      const { data } = await api.get<PaginatedResponse<Place>>('/admin/places', {
         params: { page: 1, limit: 20, ...params },
       });
       return data;
@@ -29,7 +38,7 @@ export function usePlaces(params: PlacesParams = {}) {
 
 export function usePlace(id: number) {
   return useQuery({
-    queryKey: ["places", id],
+    queryKey: ['places', id],
     queryFn: async () => {
       const { data } = await api.get<{ data: Place }>(`/admin/places/${id}`);
       return data.data ?? data;
@@ -46,11 +55,11 @@ export function useApprovePlace() {
       return data;
     },
     onSuccess: (_data, id) => {
-      queryClient.invalidateQueries({ queryKey: ["places"] });
-      queryClient.invalidateQueries({ queryKey: ["places", id] });
-      toast.success("Place approved successfully");
+      queryClient.invalidateQueries({ queryKey: ['places'] });
+      queryClient.invalidateQueries({ queryKey: ['places', id] });
+      toast.success('Place approved successfully');
     },
-    onError: () => toast.error("Failed to approve place"),
+    onError: () => toast.error('Failed to approve place'),
   });
 }
 
@@ -62,11 +71,26 @@ export function useRejectPlace() {
       return data;
     },
     onSuccess: (_data, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ["places"] });
-      queryClient.invalidateQueries({ queryKey: ["places", id] });
-      toast.success("Place rejected");
+      queryClient.invalidateQueries({ queryKey: ['places'] });
+      queryClient.invalidateQueries({ queryKey: ['places', id] });
+      toast.success('Place rejected');
     },
-    onError: () => toast.error("Failed to reject place"),
+    onError: () => toast.error('Failed to reject place'),
+  });
+}
+
+export function useCreatePlace() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: Record<string, unknown>) => {
+      const { data } = await api.post<{ data: Place }>('/places', payload);
+      return data.data ?? (data as unknown as Place);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['places'] });
+      toast.success('Place created successfully');
+    },
+    onError: (error: unknown) => toast.error(getApiErrorMessage(error, 'Failed to create place')),
   });
 }
 
@@ -78,9 +102,9 @@ export function useDeletePlace() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["places"] });
-      toast.success("Place deleted");
+      queryClient.invalidateQueries({ queryKey: ['places'] });
+      toast.success('Place deleted');
     },
-    onError: () => toast.error("Failed to delete place"),
+    onError: () => toast.error('Failed to delete place'),
   });
 }

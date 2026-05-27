@@ -1,3 +1,5 @@
+import type { FileEntity } from './index';
+
 export type PlaceClaimStatus = 'pending' | 'approved' | 'rejected';
 
 export type PlaceClaim = {
@@ -12,6 +14,7 @@ export type PlaceClaim = {
   relationship?: string | null;
   message?: string | null;
   documentFileIds?: number[] | null;
+  documentFiles?: FileEntity[] | null;
   adminNotes?: string | null;
   rejectionReason?: string | null;
   reviewedById?: number | null;

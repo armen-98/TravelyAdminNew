@@ -10,9 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatDate } from '@/lib/utils';
+import { formatDate, formatFileSize } from '@/lib/utils';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, FileText, Image as ImageIcon, ExternalLink } from 'lucide-react';
+import NextImage from 'next/image';
 
 export default function ClaimDetailPage() {
   const params = useParams();
@@ -106,7 +107,53 @@ export default function ClaimDetailPage() {
         </CardContent>
       </Card>
 
-      {claim.documentFileIds?.length ? (
+      {claim.documentFiles?.length ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Documents</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {claim.documentFiles.map((file) => {
+              const isImage = file.mimetype?.startsWith('image/');
+              return (
+                <div
+                  key={file.id}
+                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <div className="flex-shrink-0 w-10 h-10 bg-muted rounded flex items-center justify-center overflow-hidden">
+                      {isImage ? (
+                        <NextImage
+                          src={file.url}
+                          alt={file.filename}
+                          width={40}
+                          height={40}
+                          className="object-cover w-full h-full"
+                        />
+                      ) : (
+                        <FileText className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate max-w-[200px]">
+                        {file.filename}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatFileSize(file.size)}
+                      </p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="sm" asChild>
+                    <a href={file.url} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  </Button>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      ) : claim.documentFileIds?.length ? (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Documents</CardTitle>

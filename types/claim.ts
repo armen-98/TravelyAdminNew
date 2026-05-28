@@ -17,6 +17,8 @@ export type PlaceClaim = {
   documentFiles?: FileEntity[] | null;
   adminNotes?: string | null;
   rejectionReason?: string | null;
+  userUpdateMessage?: string | null;
+  updatedByUserAt?: string | null;
   reviewedById?: number | null;
   reviewedAt?: string | null;
   createdAt: string;

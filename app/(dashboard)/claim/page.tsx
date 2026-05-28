@@ -65,7 +65,16 @@ export default function ClaimRequestsPage() {
       key: 'createdAt',
       header: 'Submitted',
       cell: (row) => (
-        <span className="text-sm text-muted-foreground">{formatDate(row.createdAt)}</span>
+        <div className="space-y-1">
+          <span className="text-sm text-muted-foreground">{formatDate(row.createdAt)}</span>
+          {row.updatedByUserAt ? (
+            <div className="flex items-center gap-1">
+              <Badge variant="outline" className="text-xs px-1.5 py-0 border-blue-400 text-blue-600">
+                Updated by user
+              </Badge>
+            </div>
+          ) : null}
+        </div>
       ),
     },
   ];

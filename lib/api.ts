@@ -4,8 +4,8 @@ import { getSession, signOut } from 'next-auth/react';
 export type ApiEnvironment = 'production' | 'staging' | 'local';
 
 const API_ENVIRONMENT_URLS: Record<ApiEnvironment, string> = {
-  production: 'https://api-prod.travely.live/api',
-  staging: 'https://api-v2.travely.live/api',
+  production: process.env.NEXT_PUBLIC_PROD_API_URL || 'https://api-prod.travely.live/api',
+  staging: process.env.NEXT_PUBLIC_STAGING_API_URL || 'https://api-v2.travely.live/api',
   local: (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5500/api').replace(/\/$/, ''),
 };
 

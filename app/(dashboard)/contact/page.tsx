@@ -28,8 +28,8 @@ export default function ContactPage() {
 
   const [attachmentPreview, setAttachmentPreview] = useState<{
     url: string;
-    filename?: string;
-    mimetype?: string;
+    fileName?: string;
+    mimeType?: string;
   } | null>(null);
 
   const columns: Column<ContactRequest>[] = [
@@ -111,8 +111,7 @@ export default function ContactPage() {
         const url = req.attachmentFile?.url;
         if (!url) return <Badge variant="outline">No file</Badge>;
 
-        const mimeType =
-          (req.attachmentFile as any)?.mimetype ?? (req.attachmentFile as any)?.mimeType ?? '';
+        const mimeType = req.attachmentFile?.mimeType ?? '';
 
         if (mimeType.startsWith('image/')) {
           return (
@@ -124,8 +123,8 @@ export default function ContactPage() {
                 e.stopPropagation();
                 setAttachmentPreview({
                   url,
-                  filename: req.attachmentFile?.filename,
-                  mimetype: mimeType,
+                  fileName: req.attachmentFile?.fileName,
+                  mimeType,
                 });
               }}
             >
@@ -214,14 +213,14 @@ export default function ContactPage() {
         <DialogContent className="sm:max-w-5xl">
           <DialogHeader>
             <DialogTitle>Attachment</DialogTitle>
-            <DialogDescription>{attachmentPreview?.filename ?? 'No filename'}</DialogDescription>
+            <DialogDescription>{attachmentPreview?.fileName ?? 'No filename'}</DialogDescription>
           </DialogHeader>
 
-          {attachmentPreview?.mimetype?.startsWith('image/') ? (
+          {attachmentPreview?.mimeType?.startsWith('image/') ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={attachmentPreview.url}
-              alt={attachmentPreview.filename ?? 'attachment'}
+              alt={attachmentPreview.fileName ?? 'attachment'}
               className="w-full max-h-[80vh] object-contain rounded-lg border bg-muted"
             />
           ) : null}

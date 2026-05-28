@@ -26,8 +26,8 @@ export default function ContactRequestDetailPage() {
 
   const [attachmentPreview, setAttachmentPreview] = useState<{
     url: string;
-    filename?: string;
-    mimetype?: string;
+    fileName?: string;
+    mimeType?: string;
   } | null>(null);
 
   const resolveMutation = useResolveContactRequest();
@@ -69,8 +69,7 @@ export default function ContactRequestDetailPage() {
   }
 
   const attachmentUrl = request.attachmentFile?.url;
-  const mimeType =
-    (request.attachmentFile as any)?.mimetype ?? (request.attachmentFile as any)?.mimeType ?? '';
+  const mimeType = request.attachmentFile?.mimeType ?? '';
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -177,16 +176,16 @@ export default function ContactRequestDetailPage() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={attachmentUrl}
-                  alt={request.attachmentFile?.filename ?? 'attachment'}
+                  alt={request.attachmentFile?.fileName ?? 'attachment'}
                   className="w-[100px] h-[100px] object-cover rounded border cursor-pointer hover:opacity-90"
                   onClick={() =>
                     setAttachmentPreview({
                       url: attachmentUrl,
-                      filename: request.attachmentFile?.filename,
-                      mimetype: mimeType,
+                      fileName: request.attachmentFile?.fileName,
+                      mimeType: mimeType,
                     })
                   }
-                  title={request.attachmentFile?.filename ?? 'Attachment'}
+                  title={request.attachmentFile?.fileName ?? 'Attachment'}
                 />
               ) : (
                 <Button
@@ -204,9 +203,9 @@ export default function ContactRequestDetailPage() {
                 No attachment
               </div>
             )}
-            {request.attachmentFile?.filename ? (
+            {request.attachmentFile?.fileName ? (
               <p className="text-sm text-muted-foreground truncate">
-                {request.attachmentFile.filename}
+                {request.attachmentFile.fileName}
               </p>
             ) : null}
           </div>
@@ -222,14 +221,14 @@ export default function ContactRequestDetailPage() {
         <DialogContent className="sm:max-w-5xl">
           <DialogHeader>
             <DialogTitle>Attachment</DialogTitle>
-            <DialogDescription>{attachmentPreview?.filename ?? 'No filename'}</DialogDescription>
+            <DialogDescription>{attachmentPreview?.fileName ?? 'No filename'}</DialogDescription>
           </DialogHeader>
 
-          {attachmentPreview?.mimetype?.startsWith('image/') ? (
+          {attachmentPreview?.mimeType?.startsWith('image/') ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={attachmentPreview.url}
-              alt={attachmentPreview.filename ?? 'attachment'}
+              alt={attachmentPreview.fileName ?? 'attachment'}
               className="w-full max-h-[80vh] object-contain rounded-lg border bg-muted"
             />
           ) : null}

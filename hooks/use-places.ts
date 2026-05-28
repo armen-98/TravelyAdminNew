@@ -22,17 +22,20 @@ interface PlacesParams {
   isActive?: boolean;
   isVerified?: boolean;
   verificationFilter?: 'pending' | 'approved' | 'rejected';
+  enabled?: boolean;
 }
 
 export function usePlaces(params: PlacesParams = {}) {
+  const { enabled = true, ...queryParams } = params;
   return useQuery({
-    queryKey: ['places', params],
+    queryKey: ['places', queryParams],
     queryFn: async () => {
       const { data } = await api.get<PaginatedResponse<Place>>('/admin/places', {
-        params: { page: 1, limit: 20, ...params },
+        params: { page: 1, limit: 20, ...queryParams },
       });
       return data;
     },
+    enabled,
   });
 }
 

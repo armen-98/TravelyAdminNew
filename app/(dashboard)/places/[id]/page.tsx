@@ -32,6 +32,7 @@ import {
   Mail,
   MapPin,
   Phone,
+  Search,
   ShoppingBag,
   Star,
   Ticket,
@@ -44,7 +45,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -57,6 +58,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
+import { usePlaces } from '@/hooks/use-places';
+import { Input } from '@/components/ui/input';
 import type {
   Accommodation,
   Entertainment,
@@ -232,6 +235,7 @@ function BookingLink({ url, label = 'Book now' }: { url?: string | null; label?:
 
 function RestaurantDetails({ data }: { data: Restaurant }) {
   const allImages = [...(data.menuImages ?? []), ...(data.dishImages ?? [])];
+  console.log('allImages', allImages);
   return (
     <Card>
       <CardHeader>
@@ -568,12 +572,12 @@ function GalleryModal({
           <DialogDescription>Browse all place images</DialogDescription>
         </DialogHeader>
         <div className="relative flex items-center justify-center min-h-[60vh]">
-          <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
-            <Image
+          <div className="w-full flex items-center justify-center" style={{ minHeight: '60vh' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={images[current].url}
               alt={`Photo ${current + 1}`}
-              fill
-              className="object-contain"
+              className="max-w-full max-h-[70vh] object-contain"
             />
           </div>
           {images.length > 1 && (
@@ -612,13 +616,157 @@ function GalleryModal({
                   i === current ? 'border-white' : 'border-transparent opacity-60 hover:opacity-90'
                 }`}
               >
-                <Image src={img.url} alt="" fill className="object-cover" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={img.url} alt="" className="object-cover w-full h-full" />
               </button>
             ))}
           </div>
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+// ─── Places Search Panel ───────────────────────────────────────────────────────
+
+function PlacesSearchPanel({ currentId }: { currentId: number }) {
+  const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedQuery(query);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  const { data, isLoading } = usePlaces({
+    search: debouncedQuery || undefined,
+    page,
+    limit: 10,
+    enabled: !!debouncedQuery,
+  });
+
+  const places = data?.data ?? [];
+  const totalPages = data?.totalPages ?? 1;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <Search className="h-4 w-4" /> Search Places
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            placeholder="Search by name, address, category, city…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+
+        {!debouncedQuery ? (
+          <p className="text-sm text-muted-foreground text-center py-6">
+            Type to search all places.
+          </p>
+        ) : isLoading ? (
+          <div className="space-y-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-14 rounded-lg" />
+            ))}
+          </div>
+        ) : places.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-6">
+            No places match your search.
+          </p>
+        ) : (
+          <div className="space-y-1">
+            {places.map((p) => (
+              <Link
+                key={p.id}
+                href={`/places/${p.id}`}
+                className={`flex items-center gap-3 p-2.5 rounded-lg border hover:bg-muted/50 transition-colors ${p.id === currentId ? 'border-primary/40 bg-primary/5' : ''}`}
+              >
+                <div className="h-10 w-10 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                  {p.images?.[0]?.url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={p.images[0].url}
+                      alt={p.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium truncate">{p.name}</p>
+                    {p.id === currentId && (
+                      <Badge variant="outline" className="text-xs shrink-0">
+                        current
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {[p.category?.name, p.city?.name, p.country?.name].filter(Boolean).join(' · ')}
+                  </p>
+                </div>
+                <div className="shrink-0">
+                  {p.isVerified === true ? (
+                    <Badge variant="success" className="text-xs">
+                      Approved
+                    </Badge>
+                  ) : p.isVerified === false ? (
+                    <Badge variant="destructive" className="text-xs">
+                      Rejected
+                    </Badge>
+                  ) : (
+                    <Badge variant="warning" className="text-xs">
+                      Pending
+                    </Badge>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-1">
+            <p className="text-xs text-muted-foreground">
+              Page {page} of {totalPages}
+              {data?.total ? ` · ${data.total} total` : ''}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -710,7 +858,7 @@ export default function PlaceDetailPage() {
   }
 
   const images = place.images ?? [];
-
+  console.log('images', images);
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -780,35 +928,34 @@ export default function PlaceDetailPage() {
       {/* Image gallery grid */}
       {images.length > 0 && (
         <div className="relative">
-          <div className="grid grid-cols-3 gap-2 rounded-xl overflow-hidden max-h-72">
+          <div className="grid grid-cols-3 gap-2 rounded-xl overflow-hidden h-72">
             <button
               type="button"
               className={
                 images.length === 1
-                  ? 'col-span-3 relative aspect-video w-full max-h-72 min-h-40 cursor-pointer group'
-                  : 'col-span-2 row-span-2 relative cursor-pointer group'
+                  ? 'col-span-3 relative w-full h-full cursor-pointer group'
+                  : 'col-span-2 row-span-2 relative cursor-pointer group h-full'
               }
               onClick={() => openGallery(0)}
             >
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src={images[0].url}
                 alt={place.name}
-                fill
-                sizes="(max-width: 768px) 100vw, 66vw"
-                className="object-cover transition-transform group-hover:scale-105"
+                className="object-cover w-full h-full transition-transform group-hover:scale-105"
               />
             </button>
             {images.slice(1, 3).map((img: FileEntity, i: number) => (
               <button
                 key={img.id}
-                className="relative aspect-square cursor-pointer group"
+                className="relative cursor-pointer group overflow-hidden"
                 onClick={() => openGallery(i + 1)}
               >
-                <Image
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={img.url}
                   alt={place.name}
-                  fill
-                  className="object-cover transition-transform group-hover:scale-105"
+                  className="object-cover w-full h-full transition-transform group-hover:scale-105"
                 />
                 {i === 1 && images.length > 3 && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
@@ -1140,6 +1287,35 @@ export default function PlaceDetailPage() {
                 </div>
               )}
 
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2 border-t text-sm">
+                <div>
+                  <p className="text-xs text-muted-foreground">Place ID</p>
+                  <p className="font-medium">#{place.id}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Active</p>
+                  <Badge
+                    variant={place.isActive ? 'success' : 'secondary'}
+                    className="text-xs mt-0.5"
+                  >
+                    {place.isActive ? 'Active' : 'Inactive'}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Featured</p>
+                  <Badge
+                    variant={place.isFeatured ? 'secondary' : 'outline'}
+                    className="text-xs mt-0.5"
+                  >
+                    {place.isFeatured ? 'Featured' : 'Not featured'}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Last updated</p>
+                  <p className="text-xs">{formatDate(place.updatedAt)}</p>
+                </div>
+              </div>
+
               {!hasInfo && (
                 <p className="text-sm text-muted-foreground">No additional info available.</p>
               )}
@@ -1160,6 +1336,9 @@ export default function PlaceDetailPage() {
           </TabsContent>
         )}
       </Tabs>
+
+      {/* Places search */}
+      <PlacesSearchPanel currentId={place.id} />
 
       {/* Gallery modal */}
       {images.length > 0 && (

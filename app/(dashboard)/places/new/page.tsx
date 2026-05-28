@@ -1556,7 +1556,7 @@ export default function CreatePlacePage() {
                   key={img.id}
                   className="relative group aspect-square rounded-lg overflow-hidden border bg-muted"
                 >
-                  <Image src={img.url} alt={img.filename} fill className="object-cover" />
+                  <Image src={img.url} alt={img.fileName} fill className="object-cover" />
                   <button
                     type="button"
                     onClick={() => removeImage(img.id)}

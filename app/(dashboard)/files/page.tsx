@@ -69,7 +69,7 @@ export default function FilesPage() {
     multiple: true,
   });
 
-  const isImage = (file: FileEntity) => file.mimetype?.startsWith('image/');
+  const isImage = (file: FileEntity) => file.mimeType?.startsWith('image/');
 
   return (
     <div className="space-y-6">
@@ -131,12 +131,12 @@ export default function FilesPage() {
             <Card key={file.id} className="group overflow-hidden hover:shadow-md transition-shadow">
               <div className="relative aspect-square bg-muted">
                 {isImage(file) ? (
-                  <NextImage src={file.url} alt={file.filename} fill className="object-cover" />
+                  <NextImage src={file.url} alt={file.fileName} fill className="object-cover" />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-2">
                     <File className="h-10 w-10" />
                     <Badge variant="outline" className="text-xs">
-                      {file.mimetype?.split('/')[1]?.toUpperCase() ?? 'FILE'}
+                      {file.mimeType?.split('/')[1]?.toUpperCase() ?? 'FILE'}
                     </Badge>
                   </div>
                 )}
@@ -167,7 +167,7 @@ export default function FilesPage() {
               </div>
 
               <CardContent className="p-2">
-                <p className="text-xs font-medium truncate">{file.filename}</p>
+                <p className="text-xs font-medium truncate">{file.fileName}</p>
                 <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
               </CardContent>
             </Card>
@@ -188,7 +188,7 @@ export default function FilesPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete File</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &quot;{deleteTarget?.filename}&quot;? This cannot be
+              Are you sure you want to delete &quot;{deleteTarget?.fileName}&quot;? This cannot be
               undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

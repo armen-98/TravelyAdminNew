@@ -1,9 +1,30 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueries, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import type { FileEntity } from '@/types';
 import { toast } from 'sonner';
+
+async function fetchFileById(id: number): Promise<FileEntity> {
+  try {
+    const { data } = await api.get<FileEntity | { data: FileEntity }>(`/admin/files/${id}`);
+    return (data as { data: FileEntity }).data ?? (data as FileEntity);
+  } catch {
+    const { data } = await api.get<FileEntity | { data: FileEntity }>(`/files/${id}`);
+    return (data as { data: FileEntity }).data ?? (data as FileEntity);
+  }
+}
+
+export function useFilesByIds(ids: number[]) {
+  return useQueries({
+    queries: ids.map((id) => ({
+      queryKey: ['files', id],
+      queryFn: () => fetchFileById(id),
+      enabled: id > 0,
+      retry: 0,
+    })),
+  });
+}
 
 export function useFiles() {
   return useQuery({

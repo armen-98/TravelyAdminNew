@@ -245,9 +245,11 @@ export interface Entertainment {
 export interface FileEntity {
   id: number;
   url: string;
-  filename: string;
-  mimetype: string;
-  size: number;
+  fileName: string;
+  mimeType: string;
+  size: string | number;
+  bucketPath?: string;
+  userId?: number;
   user?: User;
   createdAt: string;
   updatedAt: string;
